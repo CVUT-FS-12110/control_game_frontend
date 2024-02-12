@@ -1,10 +1,21 @@
-<template>
-    <div class="custom-container">  
-      <canvas ref="controlCanvas" style="border: 1px solid #000;" ></canvas>
-      <canvas ref="staticCanvas" ></canvas>
-    </div>
-  </template>
+<!-- <template>
+    <v-container class="pa-1" style="position: relative; width: 800; height: 400;">  
+      <canvas ref="controlCanvas" style="border: 1px solid #000; position: absolute; top: 0; left: 0; z-index: 0;" ></canvas>
+      <canvas ref="staticCanvas" style="position: absolute; top: 0; left: 0; border: 1px solid #000; z-index: 1;" ></canvas>
+    </v-container>
+  </template> -->
   
+
+  <template>
+    <v-container class="pa-1">
+      <v-container id="canvas-container" >  
+      <canvas ref="controlCanvas" id="controlCanvas"></canvas>
+      <canvas ref="staticCanvas" id="staticCanvas" ></canvas>
+    </v-container>
+  </v-container>
+  </template>
+
+
   <script>
   export default {
     name: 'Control',
@@ -144,11 +155,12 @@
   </script>
   
   <style scoped>
-  .custom-container {
+  #canvas-container {
     position: relative;
-    padding: 10px;
+    padding: 0px;
     height: 200px;
     width: 800px;
+    margin: 0;
   }
 
  #staticCanvas{
