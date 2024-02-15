@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@mdi/font": "7.0.96",
+    "numeric": "^1.2.6",
     "roboto-fontface": "*",
     "three": "^0.161.0",
     "vue": "^3.3.0",

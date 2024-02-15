@@ -39,6 +39,9 @@
       this.$refs.controlCanvas.removeEventListener('mousemove', this.handleMouseMove);
       this.$refs.controlCanvas.removeEventListener('mousedown', this.handleMouseDown);
       this.$refs.controlCanvas.removeEventListener('mouseup', this.handleMouseUp);
+      if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
 
       // Remove other event listeners as needed
     },
