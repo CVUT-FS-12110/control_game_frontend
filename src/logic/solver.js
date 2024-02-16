@@ -1,4 +1,7 @@
-export function solvePendulumNonLinear(x, xDot, fi, fiDot, u, deltaT, mC, mP, inertia, b, lt, g) {
+export function solvePendulumNonLinear(states, u, parameters) {
+    // Destructure states and parameters from the input objects
+    const { x, xDot, fi, fiDot } = states;
+    const { deltaT, mC, mP, inertia, b, lt, g } = parameters;
     //denominator for shorter eqn
     let denom = ((7*lt**2*mP**2)/3 - lt**2*mP**2*Math.cos(fi)**2 + (7*mC*lt**2*mP)/3);
 
@@ -11,10 +14,10 @@ export function solvePendulumNonLinear(x, xDot, fi, fiDot, u, deltaT, mC, mP, in
     denom = ((7*lt**2*mP**2)/3 - lt**2*mP**2*Math.cos(x3e)**2 + (7*mC*lt**2*mP)/3);
 
     return {
-        x1: x + deltaT*x2e,
-        x2: xDot + deltaT*((7*u*lt**2*mP)/3 - (7*b*x2e*lt**2*mP)/3 + (7*x4e**2*lt**3*mP**2*Math.sin(x3e))/3 + g*lt**2*mP**2*Math.cos(x3e)*Math.sin(x3e))/denom,
-        x3: fi + deltaT*x4e,
-        x4: fiDot - deltaT*(lt*mP*(lt*mP*Math.cos(x3e)*Math.sin(x3e)*x4e**2 + u*Math.cos(x3e) + g*mP*Math.sin(x3e) + mC*g*Math.sin(x3e) - b*x2e*Math.cos(x3e)))/denom
+        x: x + deltaT*x2e,
+        xDot: xDot + deltaT*((7*u*lt**2*mP)/3 - (7*b*x2e*lt**2*mP)/3 + (7*x4e**2*lt**3*mP**2*Math.sin(x3e))/3 + g*lt**2*mP**2*Math.cos(x3e)*Math.sin(x3e))/denom,
+        fi: fi + deltaT*x4e,
+        fiDot: fiDot - deltaT*(lt*mP*(lt*mP*Math.cos(x3e)*Math.sin(x3e)*x4e**2 + u*Math.cos(x3e) + g*mP*Math.sin(x3e) + mC*g*Math.sin(x3e) - b*x2e*Math.cos(x3e)))/denom
     }
 }
 
