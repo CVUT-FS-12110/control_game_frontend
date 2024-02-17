@@ -25,12 +25,12 @@
       const force = reactive({ x: 0, y: 0 });
       const params = reactive({
         deltaT: 0.01,
-        mC: 0.5,
-        mP: 0.5,
+        mC: 1.0,
+        mP: 0.2,
         inertia: 0.002,
         b: 0.1,
         lt: 0.5,
-        g: 9.81,
+        g: -9.81,
       });
       const states = reactive({ x: 0, xDot: 0, fi: 0, fiDot: 0 });
       const lastFrameTime = ref(null);
@@ -69,6 +69,7 @@
         // This is a placeholder implementation.
         updateStates();
         segway.value.x = states.x;
+        segway.value.fi = states.fi;
         // Additional logic for updating segway's position based on the current state.
       };
   
@@ -101,12 +102,22 @@
 
           // Example method to update states using the solver
       const updateStates = () => {
+        // const rect = pendulumCanvas.value.getBoundingClientRect();
         const newStates = solvePendulumNonLinear(states, force.x, params);
         // Update the reactive states with the results
         states.x = newStates.x;
         states.xDot = newStates.xDot;
         states.fi = newStates.fi;
         states.fiDot = newStates.fiDot;
+
+        if (states.x < 0) {
+          states.x = 0;
+          states.xDot = 0;
+        }
+        else if (states.x > (pendulumCanvas.value.width - segway.value.width)) {
+          states.x = (pendulumCanvas.value.width - segway.value.width);
+          states.xDot = 0;
+        }
     };
 
   

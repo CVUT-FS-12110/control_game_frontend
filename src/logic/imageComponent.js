@@ -8,8 +8,12 @@ export class ImgComponent {
       this.speedX = speedX;
       this.fi = fi;
       this.speedFi = speedFi;
-      // Added segwayScale to the constructor for flexibility
+      this.segwayAxis = {
+        y: 454*segwayScale, //segway rotation axis
+        x: 75*segwayScale  //segway rotation axis
+    };
       this.segwayScale = segwayScale;
+      this.m2px = 1;
     }
   
     draw(ctx) {
@@ -27,11 +31,11 @@ export class ImgComponent {
       // Reset the current transformation matrix to the identity matrix
       ctx.setTransform(1, 0, 0, 1, 0, 0);
   
-      // Translate to the current position
-      ctx.translate(this.x, this.y);
-  
-      // Rotate by the current rotation angle
-      ctx.rotate(this.fi);
+      ctx.transform(1, 0, 0, 1, this.x*this.m2px + this.segwayAxis.x, this.y*this.m2px + this.segwayAxis.y);// shift to the axis
+
+      ctx.transform(Math.cos(this.fi), Math.sin(this.fi), -Math.sin(this.fi), Math.cos(this.fi), 0, 0);// rotate
+
+      ctx.transform(1, 0, 0, 1, -this.segwayAxis.x, -this.segwayAxis.y); // shift to the img corner
   
       // Additional translation if needed, for example, to center the image
       // ctx.translate(-this.width / 2, -this.height / 2); // Uncomment if needed
