@@ -2,6 +2,9 @@
     <v-container class="pa-1">
       <canvas ref="pendulumCanvas" class="bordered-canvas"></canvas>
     </v-container>
+    <!-- <v-container>
+      <parameters :xPos="xPosition" :yPos="yPosition" :force="appliedForce" />
+    </v-container> -->
   </template>
   
   <script>
@@ -10,12 +13,16 @@
   import { ImgComponent } from '@/logic/imageComponent';
   import Control from './Control.vue';
   import { solvePendulumNonLinear } from '@/logic/solver';
+  import Parameters from './Parameters.vue';
+// import Parameters from './Parameters.vue';
   
   export default {
     name: 'SegwayDisplay',
-    components: {
-      Control,
-    },
+//     components: {
+//     Control,
+//     // Parameters,
+//     // Parameters
+// },
     setup() {
       const pendulumCanvas = ref(null);
       const animationFrameId = ref(null);
@@ -92,10 +99,11 @@
         const rect = pendulumCanvas.value.getBoundingClientRect();
         const scaleX = pendulumCanvas.value.width / rect.width;
         const scaleY = pendulumCanvas.value.height / rect.height;
+        const forceScale = 0.1;
         mousePosition.x = (event.clientX - rect.left) * scaleX;
         mousePosition.y = (event.clientY - rect.top) * scaleY;
         // Your logic to apply force based on mouse position.
-        force.x = mousePosition.x - basePoint.x;;
+        force.x = (mousePosition.x - basePoint.x) * forceScale;
         }
 
       };
@@ -110,11 +118,11 @@
         states.fi = newStates.fi;
         states.fiDot = newStates.fiDot;
 
-        if (states.x < 0) {
+        if (segway.x < 0) {
           states.x = 0;
           states.xDot = 0;
         }
-        else if (states.x > (pendulumCanvas.value.width - segway.value.width)) {
+        else if (segway.x > (pendulumCanvas.value.width - segway.value.width)) {
           states.x = (pendulumCanvas.value.width - segway.value.width);
           states.xDot = 0;
         }
@@ -166,6 +174,11 @@
   
       return {
         pendulumCanvas,
+        // xPosition,
+        // yPosition,
+        // appliedForce,
+      // Other properties
+  
         // Return any other properties and methods used in your template
       };
     },

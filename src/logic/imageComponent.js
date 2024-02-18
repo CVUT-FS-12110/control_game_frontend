@@ -13,22 +13,38 @@ export class ImgComponent {
         x: 75*segwayScale  //segway rotation axis
     };
       this.segwayScale = segwayScale;
-      this.m2px = 1;
+      this.m2px = 100;
+          // Scale positions from meters to pixels
+      this.scaledX = this.x * this.segwayScale;
+      this.scaledY = this.y * this.segwayScale;
+      // this.scaledWidth = this.width * this.segwayScale;
+      // this.scaledHeight = this.height * this.segwayScale;
     }
   
     draw(ctx) {
       // Ensure transformation is applied before drawing
-      this.transform(ctx);
+      // this.transform(ctx);
+
+      ctx.save();
+
+      ctx.translate(this.x * this.m2px + this.segwayAxis.x, this.y + this.segwayAxis.y);
+
+      ctx.rotate(this.fi);
+
+      ctx.drawImage(this.img, -this.segwayAxis.x, -this.segwayAxis.y, this.width, this.height);
+      
+      ctx.restore();
   
       // Adjusted to draw the image based on its transformed position
-      ctx.drawImage(this.img, 0, 0, this.width, this.height);
+      // ctx.drawImage(this.img, 0, 0, this.width, this.height);
   
       // Reset transformation after drawing to not affect other canvas operations
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      // ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
   
     transform(ctx) {
       // Reset the current transformation matrix to the identity matrix
+
       ctx.setTransform(1, 0, 0, 1, 0, 0);
   
       ctx.transform(1, 0, 0, 1, this.x*this.m2px + this.segwayAxis.x, this.y*this.m2px + this.segwayAxis.y);// shift to the axis
