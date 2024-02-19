@@ -136,12 +136,8 @@
         states.fi = newStates.fi;
         states.fiDot = newStates.fiDot;
 
-        console.log("states.x: ", states.x);
-        console.log("states.xDot: ", states.xDot);
-        console.log("states.fi: ", states.fi);
-        console.log("states.fiDot: ", states.fiDot);
-        console.log("deltaT: ", params.deltaT);
-        if (segway.x < 0) {
+
+        if (states.x < 0) {
           states.x = 0;
           states.xDot = 0;
         }
