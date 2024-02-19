@@ -61,20 +61,31 @@
       };
   
       const startAnimation = (ctx) => {
-        const animate = () => {
+        let lastTime = 0;
+        
+        const animate = (timestamp) => {
+
+          if (!lastTime) {
+             lastTime = timestamp; // Initialize lastTime with the first timestamp
+              }
+
+          let deltaT = (timestamp - lastTime)*0.001; // Convert to seconds
+
           ctx.clearRect(0, 0, pendulumCanvas.value.width, pendulumCanvas.value.height);
-          updateSegwayPosition();
+          updateSegwayPosition(deltaT);
           segway.value.draw(ctx);
           drawReferenceLine(ctx);
+          lastTime = timestamp;
           animationFrameId.value = requestAnimationFrame(animate);
+          
         };
         animate();
       };
   
-      const updateSegwayPosition = () => {
+      const updateSegwayPosition = (deltaT) => {
         // You will need to integrate your logic for updating the segway's position here.
         // This is a placeholder implementation.
-        updateStates();
+        updateStates(deltaT);
         segway.value.x = states.x;
         segway.value.fi = states.fi;
         // Additional logic for updating segway's position based on the current state.
@@ -109,7 +120,14 @@
       };
 
           // Example method to update states using the solver
-      const updateStates = () => {
+      const updateStates = (deltaT) => {
+        
+        params.deltaT = deltaT;
+        
+        if(!deltaT) {
+          params.deltaT = 0.016;
+        }
+        
         // const rect = pendulumCanvas.value.getBoundingClientRect();
         const newStates = solvePendulumNonLinear(states, force.x, params);
         // Update the reactive states with the results
@@ -118,6 +136,11 @@
         states.fi = newStates.fi;
         states.fiDot = newStates.fiDot;
 
+        console.log("states.x: ", states.x);
+        console.log("states.xDot: ", states.xDot);
+        console.log("states.fi: ", states.fi);
+        console.log("states.fiDot: ", states.fiDot);
+        console.log("deltaT: ", params.deltaT);
         if (segway.x < 0) {
           states.x = 0;
           states.xDot = 0;
