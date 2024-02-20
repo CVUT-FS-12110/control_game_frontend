@@ -133,6 +133,7 @@
       ctx.strokeStyle = '#000000'; // Black color
       ctx.stroke();
     },
+    
     startAnimation(ctx, canvasWidth, canvasHeight) {
 
       const animate = () => {

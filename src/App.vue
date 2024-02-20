@@ -11,6 +11,8 @@
 <script setup>
 import Control from './components/Control.vue';
 import PendulumCanvas from './components/PendulumCanvas.vue';
+
+
 // import Parameters from './components/Parameters.vue';
 
   //

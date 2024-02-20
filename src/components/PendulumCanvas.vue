@@ -2,18 +2,23 @@
     <v-container class="pa-1">
       <canvas ref="pendulumCanvas" class="bordered-canvas"></canvas>
     </v-container>
-    <!-- <v-container>
-      <parameters :xPos="xPosition" :yPos="yPosition" :force="appliedForce" />
-    </v-container> -->
+    <v-card>
+      <v-card-title>Angle Value</v-card-title>
+      <v-card-text>
+        The current angle is: {{ angle }}
+      </v-card-text>
+    </v-card>
   </template>
   
   <script>
-  import { onMounted, onBeforeUnmount, ref, reactive, watch } from 'vue';
+  import { onMounted, onBeforeUnmount, ref, reactive, watch, computed} from 'vue';
   import segwayImage from '@/assets/segway.png';
   import { ImgComponent } from '@/logic/imageComponent';
   import Control from './Control.vue';
   import { solvePendulumNonLinear } from '@/logic/solver';
   import Parameters from './Parameters.vue';
+  import { useStore } from 'vuex';
+
 // import Parameters from './Parameters.vue';
   
   export default {
@@ -42,6 +47,9 @@
       const states = reactive({ x: 0, xDot: 0, fi: 0, fiDot: 0 });
       const lastFrameTime = ref(null);
       const segway = ref(null);
+      const store = useStore();
+      const angle = computed(() => store.state.fi);
+  
   
       const setupEventListeners = (canvas) => {
         canvas.addEventListener('mousemove', applyForceWithMouse);
@@ -88,6 +96,7 @@
         updateStates(deltaT);
         segway.value.x = states.x;
         segway.value.fi = states.fi;
+  
         // Additional logic for updating segway's position based on the current state.
       };
   
@@ -110,7 +119,7 @@
         const rect = pendulumCanvas.value.getBoundingClientRect();
         const scaleX = pendulumCanvas.value.width / rect.width;
         const scaleY = pendulumCanvas.value.height / rect.height;
-        const forceScale = 0.1;
+        const forceScale = 0.05;
         mousePosition.x = (event.clientX - rect.left) * scaleX;
         mousePosition.y = (event.clientY - rect.top) * scaleY;
         // Your logic to apply force based on mouse position.
@@ -135,6 +144,7 @@
         states.xDot = newStates.xDot;
         states.fi = newStates.fi;
         states.fiDot = newStates.fiDot;
+        store.commit('updateFi', states.fi)
 
 
         if (states.x < 0) {
@@ -193,6 +203,7 @@
   
       return {
         pendulumCanvas,
+        angle,
         // xPosition,
         // yPosition,
         // appliedForce,
