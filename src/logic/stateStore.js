@@ -7,6 +7,7 @@ export const stateStore = createStore({
       x_velocity: 0,
       fi: 0,
       fi_velocity: 0,
+      force: 0,
       // other variables
     };
   },
@@ -22,6 +23,9 @@ export const stateStore = createStore({
     },
     updateFiVelocity(state, fi_velocity) {
       state.fi_velocity = fi_velocity;
+    },
+    updateForce(state, force) {
+      state.force = force;
     },
     // other mutations
   },

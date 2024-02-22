@@ -2,12 +2,6 @@
     <v-container class="pa-1">
       <canvas ref="pendulumCanvas" class="bordered-canvas"></canvas>
     </v-container>
-    <v-card>
-      <v-card-title>Angle Value</v-card-title>
-      <v-card-text>
-        The current angle is: {{ angle }}
-      </v-card-text>
-    </v-card>
   </template>
   
   <script>
@@ -22,7 +16,7 @@
 // import Parameters from './Parameters.vue';
   
   export default {
-    name: 'SegwayDisplay',
+    name: 'PendulumCanvas',
 //     components: {
 //     Control,
 //     // Parameters,
@@ -40,7 +34,7 @@
         mC: 1.0,
         mP: 0.2,
         inertia: 0.002,
-        b: 0.1,
+        b: 0.2,
         lt: 0.5,
         g: -9.81,
       });
@@ -49,6 +43,7 @@
       const segway = ref(null);
       const store = useStore();
       const angle = computed(() => store.state.fi);
+      const forceX = computed(() => store.state.force);
   
   
       const setupEventListeners = (canvas) => {
@@ -124,6 +119,7 @@
         mousePosition.y = (event.clientY - rect.top) * scaleY;
         // Your logic to apply force based on mouse position.
         force.x = (mousePosition.x - basePoint.x) * forceScale;
+        store.commit('updateForce', force.x)
         }
 
       };
@@ -145,6 +141,7 @@
         states.fi = newStates.fi;
         states.fiDot = newStates.fiDot;
         store.commit('updateFi', states.fi)
+        store.commit('updateX', states.x)
 
 
         if (states.x < 0) {

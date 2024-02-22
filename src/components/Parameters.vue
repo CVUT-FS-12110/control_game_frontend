@@ -1,21 +1,40 @@
 <template>
-    <div class="parameters">
-      <p>X Position: {{ xPos }}</p>
-      <p>Y Position: {{ yPos }}</p>
-      <p>Applied Force: {{ force }}</p>
+  <v-container class="pa-1">
+    <v-card>
+      <v-card-title>Parameters</v-card-title>
+      <v-card-text>
+        <p>X Position: {{ xPos.toFixed(2) }}</p>
+        <p>Angle: {{ angle.toFixed(2) }}</p>
+        <p>Applied Force: {{ force.toFixed(2) }}</p>
+        <!-- Add more parameters as needed -->
+      </v-card-text>
       <!-- Add more parameters as needed -->
-    </div>
+    </v-card>
+  </v-container>
   </template>
   
+
   <script>
+  import { useStore } from 'vuex';
+  import { computed } from 'vue';
+
+
   export default {
     name: 'Parameters',
-    props: {
-      xPos: Number,
-      yPos: Number,
-      force: Number,
-      // Define other parameters as props here
-    }
+    setup() {
+      const store = useStore();
+      const xPos = computed(() => store.state.x);
+      const force = computed(() => store.state.force);
+      const angle = computed(() => store.state.fi);
+      // Add more parameters as needed
+
+      return {
+        xPos,
+        angle,
+        force,
+        // Add more parameters as needed
+      };
+    },
   }
   </script>
   
