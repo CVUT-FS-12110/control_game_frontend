@@ -13,12 +13,32 @@ export function solvePendulumNonLinear(states, u, parameters) {
     //implicit euler solver
     denom = ((7*lt**2*mP**2)/3 - lt**2*mP**2*Math.cos(x3e)**2 + (7*mC*lt**2*mP)/3);
 
-    return {
-        x: x + deltaT*x2e,
-        xDot: xDot + deltaT*((7*u*lt**2*mP)/3 - (7*b*x2e*lt**2*mP)/3 + (7*x4e**2*lt**3*mP**2*Math.sin(x3e))/3 + g*lt**2*mP**2*Math.cos(x3e)*Math.sin(x3e))/denom,
-        fi: fi + deltaT*x4e,
-        fiDot: fiDot - deltaT*(lt*mP*(lt*mP*Math.cos(x3e)*Math.sin(x3e)*x4e**2 + u*Math.cos(x3e) + g*mP*Math.sin(x3e) + mC*g*Math.sin(x3e) - b*x2e*Math.cos(x3e)))/denom
+    let x1i = x + deltaT*x2e;
+    let x2i = xDot + deltaT*((7*u*lt**2*mP)/3 - (7*b*x2e*lt**2*mP)/3 + (7*x4e**2*lt**3*mP**2*Math.sin(x3e))/3 + g*lt**2*mP**2*Math.cos(x3e)*Math.sin(x3e))/denom;
+    let x3i = fi + deltaT*x4e;
+    let x4i = fiDot - deltaT*(lt*mP*(lt*mP*Math.cos(x3e)*Math.sin(x3e)*x4e**2 + u*Math.cos(x3e) + g*mP*Math.sin(x3e) + mC*g*Math.sin(x3e) - b*x2e*Math.cos(x3e)))/denom;
+
+
+    // if new states x, xDot, fi, fiDot are Nan, return zeros
+    if (isNaN(x1i) || isNaN(x2i) || isNaN(x3i) || isNaN(x4i)) {
+        return {
+            x: 0,
+            xDot: 0,
+            fi: 0,
+            fiDot: 0
+        }
     }
+    else {
+        return {
+            x: x1i,
+            xDot: x2i,
+            fi: x3i,
+            fiDot: x4i
+        }
+    }
+
+
+
 }
 
 // euler PID solver

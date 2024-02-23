@@ -8,9 +8,7 @@
   import { onMounted, onBeforeUnmount, ref, reactive, watch, computed} from 'vue';
   import segwayImage from '@/assets/segway.png';
   import { ImgComponent } from '@/logic/imageComponent';
-  import Control from './Control.vue';
   import { solvePendulumNonLinear } from '@/logic/solver';
-  import Parameters from './Parameters.vue';
   import { useStore } from 'vuex';
 
 // import Parameters from './Parameters.vue';
@@ -57,7 +55,7 @@
         const imgScale = 0.3;
         const img = new Image();
         img.onload = () => {
-          segway.value = new ImgComponent(img, 200, 20, 0, 0, 0, imgScale);
+          segway.value = new ImgComponent(img, 0, 20, 0, 0, 0, imgScale);
           startAnimation(ctx);
         };
         img.src = segwayImage;
@@ -99,7 +97,7 @@
         if (!isMouseDown.value) return;
         ctx.beginPath();
         ctx.moveTo(basePoint.x, basePoint.y);
-        ctx.lineTo(mousePosition.x, mousePosition.y);
+        ctx.lineTo(mousePosition.x, basePoint.y);
         ctx.strokeStyle = '#ff0000';
         ctx.stroke();
       };
