@@ -54,8 +54,9 @@
         const ctx = canvas.getContext('2d');
         const imgScale = 0.3;
         const img = new Image();
+        const m2px = 100; // 1 meter = 100 pixels
         img.onload = () => {
-          segway.value = new ImgComponent(img, 0, 20, 0, 0, 0, imgScale);
+          segway.value = new ImgComponent(img, 0, 20, 0, 0, 0, imgScale, m2px);
           startAnimation(ctx);
         };
         img.src = segwayImage;
@@ -138,18 +139,19 @@
         states.xDot = newStates.xDot;
         states.fi = newStates.fi;
         states.fiDot = newStates.fiDot;
-        store.commit('updateFi', states.fi)
-        store.commit('updateX', states.x)
-
 
         if (states.x < 0) {
           states.x = 0;
           states.xDot = 0;
         }
-        else if (segway.x > (pendulumCanvas.value.width - segway.value.width)) {
-          states.x = (pendulumCanvas.value.width - segway.value.width);
+        else if (states.x > ((pendulumCanvas.value.width - segway.value.width)/segway.value.m2px)) {
+          states.x = ((pendulumCanvas.value.width - segway.value.width)/segway.value.m2px);
           states.xDot = 0;
         }
+
+        store.commit('updateFi', states.fi)
+        store.commit('updateX', states.x)
+
     };
 
   

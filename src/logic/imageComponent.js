@@ -1,5 +1,5 @@
 export class ImgComponent {
-    constructor(img, x, y, fi, speedX, speedFi, segwayScale) {
+    constructor(img, x, y, fi, speedX, speedFi, segwayScale, m2px) {
       this.width = img.width * segwayScale;
       this.height = img.height * segwayScale;
       this.img = img;
@@ -13,7 +13,7 @@ export class ImgComponent {
         x: 75*segwayScale  //segway rotation axis
     };
       this.segwayScale = segwayScale;
-      this.m2px = 100;
+      this.m2px = m2px;
           // Scale positions from meters to pixels
       this.scaledX = this.x * this.segwayScale;
       this.scaledY = this.y * this.segwayScale;
