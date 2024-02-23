@@ -10,6 +10,7 @@
   import { ImgComponent } from '@/logic/imageComponent';
   import { solvePendulumNonLinear } from '@/logic/solver';
   import { useStore } from 'vuex';
+  import { ArrowComponent } from '@/logic/arrowComponent';
 
 // import Parameters from './Parameters.vue';
   
@@ -39,6 +40,7 @@
       const states = reactive({ x: 0, xDot: 0, fi: 0, fiDot: 0 });
       const lastFrameTime = ref(null);
       const segway = ref(null);
+      const arrow = ref(null);
       const store = useStore();
       const angle = computed(() => store.state.fi);
       const forceX = computed(() => store.state.force);
@@ -96,11 +98,12 @@
   
       const drawReferenceLine = (ctx) => {
         if (!isMouseDown.value) return;
-        ctx.beginPath();
-        ctx.moveTo(basePoint.x, basePoint.y);
-        ctx.lineTo(mousePosition.x, basePoint.y);
-        ctx.strokeStyle = '#ff0000';
-        ctx.stroke();
+        arrow.value.draw(ctx, mousePosition);
+        // ctx.beginPath();
+        // ctx.moveTo(basePoint.x, basePoint.y);
+        // ctx.lineTo(mousePosition.x, basePoint.y);
+        // ctx.strokeStyle = '#ff0000';
+        // ctx.stroke();
       };
 
 
@@ -183,6 +186,7 @@
           basePoint.x = canvas.width / 2;
           basePoint.y = canvas.height / 2;
           loadAndDrawImage(canvas);
+          arrow.value = new ArrowComponent(15, 15, '#ff0000', basePoint);
         }
       };
   
