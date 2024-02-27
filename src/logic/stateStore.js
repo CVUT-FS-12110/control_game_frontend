@@ -8,6 +8,8 @@ export const stateStore = createStore({
       fi: 0,
       fi_velocity: 0,
       force: 0,
+      cartMass: 1,
+      controlMode: 'Mouse',
       // other variables
     };
   },
@@ -27,7 +29,23 @@ export const stateStore = createStore({
     updateForce(state, force) {
       state.force = force;
     },
+    updateCartMass(state, mass) {
+      state.cartMass = mass;
+    },
+
+    updateControlMode(state, mode) {
+      state.controlMode = mode;
+    },
     // other mutations
   },
+  actions: {
+    setMass({ commit }, mass) {
+      commit('updateCartMass', mass);
+    },
+
+    toggleControlMode({ commit }, mode) {
+      commit('updateControlMode', mode);
+    },
   // actions and getters as needed
+  },
 });

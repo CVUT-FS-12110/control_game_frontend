@@ -4,9 +4,6 @@
         <PendulumCanvas />
       </v-row>
       <v-row class="child-width">
-        <Control />
-      </v-row>
-      <v-row class="child-width">
         <Parameters />
       </v-row>
 

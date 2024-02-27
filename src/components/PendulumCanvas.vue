@@ -8,7 +8,7 @@
   import { onMounted, onBeforeUnmount, ref, reactive, watch, computed} from 'vue';
   import segwayImage from '@/assets/segway.png';
   import { ImgComponent } from '@/logic/imageComponent';
-  import { solvePendulumNonLinear } from '@/logic/solver';
+  import { solvePendulumNonLinear, pid} from '@/logic/solver';
   import { useStore } from 'vuex';
   import { ArrowComponent } from '@/logic/arrowComponent';
 
@@ -27,7 +27,8 @@
       const isMouseDown = ref(false);
       const mousePosition = reactive({ x: 0, y: 0 });
       const basePoint = reactive({ x: null, y: null });
-      const force = reactive({ x: 0, y: 0 });
+      const mouseForce = reactive({ x: 0, y: 0 });
+      const PIDForce = ref(0);
       const params = reactive({
         deltaT: 0.01,
         mC: 1.0,
@@ -43,7 +44,10 @@
       const arrow = ref(null);
       const store = useStore();
       const angle = computed(() => store.state.fi);
-      const forceX = computed(() => store.state.force);
+      const mass = computed(() => store.state.cartMass);
+      const controlMode = computed(() => store.state.controlMode);
+      const appliedForce = computed(() => store.state.force);
+      
   
   
       const setupEventListeners = (canvas) => {
@@ -98,6 +102,7 @@
   
       const drawReferenceLine = (ctx) => {
         if (!isMouseDown.value) return;
+        else if (controlMode.value != 'Mouse') return;
         arrow.value.draw(ctx, mousePosition);
         // ctx.beginPath();
         // ctx.moveTo(basePoint.x, basePoint.y);
@@ -106,13 +111,32 @@
         // ctx.stroke();
       };
 
+      // const applyForceWithPID = () => {
+      //   if (controlMode.value === 'PID') {
+      //     const e 
+      //     const e_last
+      //     const e_last_2
+      //     const u_last
+      //     const r0
+      //     const rI 
+      //     const rD
+
+
+      //     PIDForce.value = pid(states.fi, states.fiDot, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+
+      //   const force = pid(states.fi, states.fiDot, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      //   store.commit('updateForce', force)
+      // }
 
   
       const applyForceWithMouse = (event) => {
-        if (!isMouseDown.value) {
-          force.x = 0;
+        
+        if (!isMouseDown.value && controlMode.value === 'Mouse') {
+          mouseForce.x = 0;
+          store.commit('updateForce', mouseForce.x)
         }
-        else {
+        else if (controlMode.value === 'Mouse'){
         const rect = pendulumCanvas.value.getBoundingClientRect();
         const scaleX = pendulumCanvas.value.width / rect.width;
         const scaleY = pendulumCanvas.value.height / rect.height;
@@ -120,23 +144,28 @@
         mousePosition.x = (event.clientX - rect.left) * scaleX;
         mousePosition.y = (event.clientY - rect.top) * scaleY;
         // Your logic to apply force based on mouse position.
-        force.x = (mousePosition.x - basePoint.x) * forceScale;
-        store.commit('updateForce', force.x)
+        mouseForce.x = (mousePosition.x - basePoint.x) * forceScale;
+        store.commit('updateForce', mouseForce.x)
         }
 
       };
+
 
           // Example method to update states using the solver
       const updateStates = (deltaT) => {
         
         params.deltaT = deltaT;
+        params.mC = mass;
+      
         
         if(!deltaT) {
           params.deltaT = 0.016;
         }
         
+        // if controlMode is PID, use the force from the store
         // const rect = pendulumCanvas.value.getBoundingClientRect();
-        const newStates = solvePendulumNonLinear(states, force.x, params);
+        // if controlMode is Mouse, use the force from the mouse
+        const newStates = solvePendulumNonLinear(states, appliedForce.value , params);
         // Update the reactive states with the results
         states.x = newStates.x;
         states.xDot = newStates.xDot;
