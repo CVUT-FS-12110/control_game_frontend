@@ -8,7 +8,7 @@
   import { onMounted, onBeforeUnmount, ref, reactive, watch, computed} from 'vue';
   import segwayImage from '@/assets/segway.png';
   import { ImgComponent } from '@/logic/imageComponent';
-  import { solvePendulumNonLinear, pid} from '@/logic/solver';
+  import { solvePendulumNonLinear, PID} from '@/logic/solver';
   import { useStore } from 'vuex';
   import { ArrowComponent } from '@/logic/arrowComponent';
 
@@ -30,17 +30,22 @@
       const mouseForce = reactive({ x: 0, y: 0 });
       const PIDForce = ref(0);
       const params = reactive({
-        deltaT: 0.01,
+        deltaT: 0.0167,
         mC: 1.0,
         mP: 0.2,
         inertia: 0.002,
         b: 0.2,
         lt: 0.5,
         g: -9.81,
+        r0: -50,
+        rI: -20,
+        rD: -10,
+        lastState: ""
       });
       const states = reactive({ x: 0, xDot: 0, fi: 0, fiDot: 0 });
       const lastFrameTime = ref(null);
       const segway = ref(null);
+      const PIDController = ref(null);
       const arrow = ref(null);
       const store = useStore();
       const angle = computed(() => store.state.fi);
@@ -103,7 +108,7 @@
       const drawReferenceLine = (ctx) => {
         if (!isMouseDown.value) return;
         else if (controlMode.value != 'Mouse') return;
-        arrow.value.draw(ctx, mousePosition);
+        arrow.value.draw(ctx, mousePosition, basePoint.x);
         // ctx.beginPath();
         // ctx.moveTo(basePoint.x, basePoint.y);
         // ctx.lineTo(mousePosition.x, basePoint.y);
@@ -111,25 +116,15 @@
         // ctx.stroke();
       };
 
-      // const applyForceWithPID = () => {
-      //   if (controlMode.value === 'PID') {
-      //     const e 
-      //     const e_last
-      //     const e_last_2
-      //     const u_last
-      //     const r0
-      //     const rI 
-      //     const rD
+      const applyForceWithPID = (deltaT) => {
+        if (controlMode.value === 'PID') {
 
+          let e = 0 - states.fi;
+          store.commit('updateForce',  PIDController.value.update(e, deltaT))
+       }
 
-      //     PIDForce.value = pid(states.fi, states.fiDot, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      };
 
-
-      //   const force = pid(states.fi, states.fiDot, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-      //   store.commit('updateForce', force)
-      // }
-
-  
       const applyForceWithMouse = (event) => {
         
         if (!isMouseDown.value && controlMode.value === 'Mouse') {
@@ -156,6 +151,7 @@
         
         params.deltaT = deltaT;
         params.mC = mass;
+
       
         
         if(!deltaT) {
@@ -164,7 +160,29 @@
         
         // if controlMode is PID, use the force from the store
         // const rect = pendulumCanvas.value.getBoundingClientRect();
+
         // if controlMode is Mouse, use the force from the mouse
+
+        //detect the change in control mode. If the mode changes from Mouse to PID, reset the states
+
+
+
+        if (controlMode.value === 'PID' && params.lastState != 'PID') {
+          
+          states.x = 4;
+          states.xDot = 0;
+          states.fi = 0.15;
+          states.fiDot = 0;
+
+          applyForceWithPID(deltaT);
+          params.lastState = 'PID';
+
+        }
+        else if (controlMode.value === 'PID' && params.lastState === 'PID') {
+          applyForceWithPID(deltaT);
+        }
+        
+
         const newStates = solvePendulumNonLinear(states, appliedForce.value , params);
         // Update the reactive states with the results
         states.x = newStates.x;
@@ -216,6 +234,7 @@
           basePoint.y = canvas.height / 2;
           loadAndDrawImage(canvas);
           arrow.value = new ArrowComponent(15, 15, '#ff0000', basePoint);
+          PIDController.value = new PID(params.r0, params.rI, params.rD, params.deltaT);
         }
       };
   

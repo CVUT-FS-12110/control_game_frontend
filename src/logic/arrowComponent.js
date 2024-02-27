@@ -12,17 +12,17 @@ export class ArrowComponent {
      this.y3 = 0;
     }
   
-    draw(ctx, mousePosition) {
+    draw(ctx, mousePosition, cartPosition){
 
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(this.basePoint.x, this.basePoint.y);
+        ctx.moveTo(cartPosition, this.basePoint.y);
         ctx.lineTo(mousePosition.x, this.basePoint.y);
         ctx.strokeStyle = this.arrowColor;
         ctx.stroke();
         
         
-        if(mousePosition.x > this.basePoint.x) {
+        if(mousePosition.x > cartPosition) {
           this.x1 = mousePosition.x - this.arrowLength;
           this.y1 = this.basePoint.y - this.arrowWidth/2;
           this.x2 = mousePosition.x - this.arrowLength;

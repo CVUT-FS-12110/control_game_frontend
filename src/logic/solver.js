@@ -41,7 +41,43 @@ export function solvePendulumNonLinear(states, u, parameters) {
 
 }
 
-// euler PID solver
-export function pid(e, eLast, eLast2, uLast, r0, rI, rD, deltaT) {
-    return uLast + r0*(e - eLast) + rI*e*deltaT + rD*(e - 2*eLast + eLast2)/deltaT
+// creat PID controller class
+export class PID {
+    constructor(r0, rI, rD, deltaT) {
+        this.r0 = r0
+        this.rI = rI
+        this.rD = rD
+        this.deltaT = deltaT
+        this.eLast = 0
+        this.eLast2 = 0
+        this.uLast = 0
+    }
+    // update PID controller
+    update(e, deltaT) {
+        this.deltaT = deltaT
+        let u = this.solve(e, this.eLast, this.eLast2, this.uLast, this.r0, this.rI, this.rD, this.deltaT)
+        // limit the control signal
+        if (u > 100) {
+            u = 100
+        }
+        else if (u < -100) {
+            u = -100
+        }
+        this.eLast2 = this.eLast
+        this.eLast = e
+        this.uLast = u
+        return u
+    }
+    // add solver of PID controller
+    solve(e, eLast, eLast2, uLast, r0, rI, rD, deltaT) {
+        return uLast + r0*(e - eLast) + rI*e*deltaT + rD*(e - 2*eLast + eLast2)/deltaT
+    }
+
+    // reset PID controller
+    reset() {
+        this.eLast = 0
+        this.eLast2 = 0
+        this.uLast = 0
+    }
+
 }
