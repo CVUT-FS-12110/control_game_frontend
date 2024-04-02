@@ -37,7 +37,7 @@
     setup() {
       const store = useStore();
       const xPos = computed(() => store.state.x);
-      const force = computed(() => store.state.force);
+      const force = computed(() => store.state.totalForce);
       const angle = computed(() => store.state.fi);
 
 
