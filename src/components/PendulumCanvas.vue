@@ -27,6 +27,7 @@
       const isMouseDown = ref(false);
       const mousePosition = reactive({ x: 0, y: 0 });
       const basePoint = reactive({ x: null, y: null });
+      const disturbance_base_point = reactive({ x: null, y: null });
       const mouseForce = reactive({ x: 0, y: 0 });
       const PIDForce = ref(0);
       const params = reactive({
@@ -47,12 +48,16 @@
       const segway = ref(null);
       const PIDController = ref(null);
       const arrow = ref(null);
+      const disturbance_arrow = ref(null);
       const store = useStore();
       const angle = computed(() => store.state.fi);
       const mass = computed(() => store.state.cartMass);
       const controlMode = computed(() => store.state.controlMode);
-      const appliedForce = computed(() => store.state.force);
-      
+      const appliedForce = computed(() => store.state.totalForce);
+      const disturbance = computed(() => store.state.disturbance);
+
+      const timeLimit = computed(() => store.state.timeLimit);
+      const currentTime = computed(() => store.state.currentTime);
   
   
       const setupEventListeners = (canvas) => {
@@ -67,7 +72,7 @@
         const img = new Image();
         const m2px = 100; // 1 meter = 100 pixels
         img.onload = () => {
-          segway.value = new ImgComponent(img, 0, 20, 0, 0, 0, imgScale, m2px);
+          segway.value = new ImgComponent(img, basePoint.x, 20, 0, 0, 0, imgScale, m2px);
           startAnimation(ctx);
         };
         img.src = segwayImage;
@@ -75,6 +80,8 @@
   
       const startAnimation = (ctx) => {
         let lastTime = 0;
+        store.dispatch('resetTimer');
+        store.dispatch('startTimer');
         
         const animate = (timestamp) => {
 
@@ -88,6 +95,10 @@
           updateSegwayPosition(deltaT);
           segway.value.draw(ctx);
           drawReferenceLine(ctx);
+          drawDisturbanceLine(ctx);
+          drawZeroLine(ctx);
+          store.commit("updateDisturbance", generateRandomForce(-1, 1));
+          store.commit("updateTotalForce", store.state.force + store.state.disturbance);
           lastTime = timestamp;
           animationFrameId.value = requestAnimationFrame(animate);
           
@@ -108,7 +119,8 @@
       const drawReferenceLine = (ctx) => {
         if (!isMouseDown.value) return;
         else if (controlMode.value != 'Mouse') return;
-        arrow.value.draw(ctx, mousePosition, basePoint.x);
+        arrow.value.draw(ctx, mousePosition.x, basePoint.x);
+        
         // ctx.beginPath();
         // ctx.moveTo(basePoint.x, basePoint.y);
         // ctx.lineTo(mousePosition.x, basePoint.y);
@@ -116,11 +128,36 @@
         // ctx.stroke();
       };
 
+      const drawZeroLine = (ctx) => {
+        // draw dashed black line at the base of the canvas
+        ctx.setLineDash([5, 15]);
+        ctx.beginPath();
+        ctx.moveTo(basePoint.x, 0);
+        ctx.lineTo(basePoint.x, pendulumCanvas.value.height);
+        ctx.strokeStyle = '#000000';
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset line dash pattern
+      };
+
+      const drawDisturbanceLine = (ctx) => {
+        disturbance_arrow.value.draw(ctx, disturbance_base_point.x + store.state.disturbance*50, disturbance_base_point.x)
+        // ctx.beginPath();
+        // ctx.moveTo(basePoint.x, basePoint.y);
+        // ctx.lineTo(mousePosition.x, basePoint.y);
+        // ctx.strokeStyle = '#ff0000';
+        // ctx.stroke();
+      };
+
+
+      function generateRandomForce(min, max) {
+        return Math.random() * (max - min) + min;
+      };
+
       const applyForceWithPID = (deltaT) => {
         if (controlMode.value === 'PID') {
 
           let e = 0 - states.fi;
-          store.commit('updateForce',  PIDController.value.update(e, deltaT))
+          store.commit('updateForce',  PIDController.value.update(e, deltaT));
        }
 
       };
@@ -129,7 +166,8 @@
         
         if (!isMouseDown.value && controlMode.value === 'Mouse') {
           mouseForce.x = 0;
-          store.commit('updateForce', mouseForce.x)
+          store.commit('updateForce', mouseForce.x);
+          params.lastState = 'Mouse';
         }
         else if (controlMode.value === 'Mouse'){
         const rect = pendulumCanvas.value.getBoundingClientRect();
@@ -140,7 +178,8 @@
         mousePosition.y = (event.clientY - rect.top) * scaleY;
         // Your logic to apply force based on mouse position.
         mouseForce.x = (mousePosition.x - basePoint.x) * forceScale;
-        store.commit('updateForce', mouseForce.x)
+        store.commit('updateForce', mouseForce.x);
+        params.lastState = 'Mouse';
         }
 
       };
@@ -232,8 +271,12 @@
           canvas.height = 400;
           basePoint.x = canvas.width / 2;
           basePoint.y = canvas.height / 2;
+          disturbance_base_point.x = canvas.width - 200;
+          disturbance_base_point.y = canvas.height - 100;
+          states.x = (basePoint.x - 75*0.3)/100;
           loadAndDrawImage(canvas);
           arrow.value = new ArrowComponent(15, 15, '#ff0000', basePoint);
+          disturbance_arrow.value = new ArrowComponent(15, 15, '#0000ff', disturbance_base_point);
           PIDController.value = new PID(params.r0, params.rI, params.rD, params.deltaT);
         }
       };
@@ -253,6 +296,9 @@
       return {
         pendulumCanvas,
         angle,
+        timeLimit,
+        currentTime,
+        // startSimulation, 
         // xPosition,
         // yPosition,
         // appliedForce,
