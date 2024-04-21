@@ -128,6 +128,8 @@
       const d_constant = ref(1.0);
       // const pid = ref(store.state.pid);
 
+
+      // TODO: Difference vs ref or computed here?
       // Computed properties to get/set Vuex state
       const mass = ref(store.state.cartMass)
       const pendulum_mass= ref(store.state.pendulumMass)

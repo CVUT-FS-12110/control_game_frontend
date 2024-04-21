@@ -11,8 +11,8 @@ export const stateStore = createStore({
       disturbance: 0,
       totalForce: 0,
       cartMass: 1,
-      pendulumMass: 1,
-      pendulumLength: 1,
+      pendulumMass: 0.2,
+      pendulumLength: 0.5,
       controlMode: 'Mouse',
       distance: 0,
       timeLimit: 60, // Time limit in seconds
