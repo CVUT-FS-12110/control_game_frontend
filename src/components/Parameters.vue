@@ -23,6 +23,89 @@
     ></v-switch>
       <!-- Add more parameters as needed -->
     </v-card>
+    <v-card>
+    <v-tabs
+      v-model="tab"
+      bg-color="primary"
+    >
+      <v-tab value="pid">PID parameters</v-tab>
+      <v-tab value="model">Model parameters</v-tab>
+      <v-tab value="simulation">Simulation parameters</v-tab>
+    </v-tabs>
+
+    <v-container>
+      <v-window v-model="tab">
+        <v-window-item value="pid">
+          <v-row>
+            <v-col>
+              <v-text-field
+                label="P"
+                v-model="p_constant"
+                :rules="[rules.minValue, rules.maxValue]"
+                type="number"
+              ></v-text-field>
+          </v-col>
+          <v-col>
+
+            <v-text-field
+              label="I"
+              v-model="i_constant"
+              :rules="[rules.minValue, rules.maxValue]"
+              type="number"
+            ></v-text-field>
+
+          </v-col>
+          <v-col>
+            <v-text-field
+              label="D"
+              v-model="d_constant"
+              :rules="[rules.minValue, rules.maxValue]"
+              type="number"
+            ></v-text-field>
+          </v-col>
+        </v-row>  
+
+
+        </v-window-item>
+
+        <v-window-item value="model">
+          <v-row>
+            <v-col>            
+              <v-text-field
+              label="Cart mass"
+              v-model="mass"
+              :rules="[rules.minValue, rules.maxValue]"
+              type="number"
+              ></v-text-field>
+        </v-col>
+    
+        <v-col>
+          <v-text-field
+          label="Pendulum mass"
+          v-model="pendulum_mass"
+          :rules="[rules.minValue, rules.maxValue]"
+          type="number"
+          ></v-text-field>
+        </v-col>
+
+        <v-col>
+          <v-text-field
+          label="Pendulum length"
+          v-model="pendulum_length"
+          :rules="[rules.minValue, rules.maxValue]"
+          type="number"
+          ></v-text-field>
+        </v-col>
+
+          </v-row>
+        </v-window-item>
+
+        <v-window-item value="simulation">
+          Three
+        </v-window-item>
+      </v-window>
+    </v-container>
+  </v-card>
   </v-container>
   </template>
   
@@ -39,10 +122,17 @@
       const xPos = computed(() => store.state.x);
       const force = computed(() => store.state.totalForce);
       const angle = computed(() => store.state.fi);
-
+      const tab = ref();
+      const p_constant = ref(1.0);
+      const i_constant = ref(1.0);
+      const d_constant = ref(1.0);
+      // const pid = ref(store.state.pid);
 
       // Computed properties to get/set Vuex state
       const mass = ref(store.state.cartMass)
+      const pendulum_mass= ref(store.state.pendulumMass)
+      const pendulum_length = ref(store.state.pendulumLength)
+
       const controlMode = ref(store.state.controlMode);
       // Add more parameters as needed
 
@@ -71,10 +161,15 @@
         angle,
         force,
         mass,
+        pendulum_mass,
+        pendulum_length,
         rules,
         updateParameters,
         controlModeSwitch,
-        // Add more parameters as needed
+        tab,
+        p_constant,
+        i_constant,
+        d_constant,        // Add more parameters as needed
       };
     },
   }
