@@ -2,7 +2,9 @@ name: Build and Deploy Vue App to GitHub Pages
 
 on:
   push:
-    branches: ["main"]  # Ensure this is your default branch, change to 'master' if that is your default
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
   workflow_dispatch:
 
 permissions:
