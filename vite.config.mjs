@@ -8,8 +8,12 @@ import ViteFonts from 'unplugin-fonts/vite'
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
 
+const baseConfig = process.env.NODE_ENV === 'production' ? '/ontrol_game_frontend/' : '/';
+
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: baseConfig,
   plugins: [
     Vue({
       template: { transformAssetUrls }
