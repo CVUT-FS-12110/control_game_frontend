@@ -13,6 +13,9 @@ export const stateStore = createStore({
       cartMass: 1,
       pendulumMass: 0.2,
       pendulumLength: 0.5,
+      p_constant: -50,
+      i_constant: -20,
+      d_constant: -10,
       controlMode: 'Mouse',
       distance: 0,
       timeLimit: 60, // Time limit in seconds
@@ -54,6 +57,18 @@ export const stateStore = createStore({
       state.pendulumLength = length;
     },
 
+    updatePConstant(state, p_constant) {
+      state.p_constant = p_constant;
+    },
+
+    updateIConstant(state, i_constant) {
+      state.i_constant = i_constant;
+    },
+
+    updateDConstant(state, d_constant) {
+      state.d_constant = d_constant;
+    },
+    
     updateControlMode(state, mode) {
       state.controlMode = mode;
     },
@@ -82,6 +97,18 @@ export const stateStore = createStore({
 
     setPendulumLength({ commit }, length) {
       commit('updatePendulumLength', length);
+    },
+
+    setPConstant({ commit }, p_constant) {
+      commit('updatePConstant', p_constant);
+    },
+
+    setIConstant({ commit }, i_constant) {
+      commit('updateIConstant', i_constant);
+    },
+
+    setDConstant({ commit }, d_constant) {
+      commit('updateDConstant', d_constant);
     },
 
     toggleControlMode({ commit }, mode) {

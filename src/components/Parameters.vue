@@ -7,16 +7,15 @@
         <p>Angle: {{ angle.toFixed(2) }}</p>
         <p>Applied Force: {{ force.toFixed(2) }}</p>
         <!-- Add more parameters as needed -->
-      </v-card-text>
+      <!-- </v-card-text>
       <v-card-text>
         <v-text-field
           label="Mass"
           v-model="mass"
           :rules="[rules.minValue, rules.maxValue]"
           type="number"
-    ></v-text-field>
-      </v-card-text>
-      <v-btn @click="updateParameters">Update Parameters</v-btn>
+    ></v-text-field> -->
+      </v-card-text> 
       <v-switch
       v-model="controlModeSwitch"
       :label="`Control Mode: ${controlModeSwitch ? 'PID' : 'Mouse'}`"
@@ -41,7 +40,7 @@
               <v-text-field
                 label="P"
                 v-model="p_constant"
-                :rules="[rules.minValue, rules.maxValue]"
+                :rules="[rulesPID.minValue, rulesPID.maxValue]"
                 type="number"
               ></v-text-field>
           </v-col>
@@ -50,7 +49,7 @@
             <v-text-field
               label="I"
               v-model="i_constant"
-              :rules="[rules.minValue, rules.maxValue]"
+              :rules="[rulesPID.minValue, rulesPID.maxValue]"
               type="number"
             ></v-text-field>
 
@@ -59,7 +58,7 @@
             <v-text-field
               label="D"
               v-model="d_constant"
-              :rules="[rules.minValue, rules.maxValue]"
+              :rules="[rulesPID.minValue, rulesPID.maxValue]"
               type="number"
             ></v-text-field>
           </v-col>
@@ -74,7 +73,7 @@
               <v-text-field
               label="Cart mass"
               v-model="mass"
-              :rules="[rules.minValue, rules.maxValue]"
+              :rules="[rulesParams.minValue, rulesParams.maxValue]"
               type="number"
               ></v-text-field>
         </v-col>
@@ -83,7 +82,7 @@
           <v-text-field
           label="Pendulum mass"
           v-model="pendulum_mass"
-          :rules="[rules.minValue, rules.maxValue]"
+          :rules="[rulesParams.minValue, rulesParams.maxValue]"
           type="number"
           ></v-text-field>
         </v-col>
@@ -92,7 +91,7 @@
           <v-text-field
           label="Pendulum length"
           v-model="pendulum_length"
-          :rules="[rules.minValue, rules.maxValue]"
+          :rules="[rulesParams.minValue, rulesParams.maxValue]"
           type="number"
           ></v-text-field>
         </v-col>
@@ -104,6 +103,7 @@
           Three
         </v-window-item>
       </v-window>
+      <v-btn @click="updateParameters">Update Parameters</v-btn>
     </v-container>
   </v-card>
   </v-container>
@@ -123,9 +123,9 @@
       const force = computed(() => store.state.totalForce);
       const angle = computed(() => store.state.fi);
       const tab = ref();
-      const p_constant = ref(1.0);
-      const i_constant = ref(1.0);
-      const d_constant = ref(1.0);
+      const p_constant = ref(store.state.p_constant);
+      const i_constant = ref(store.state.i_constant);
+      const d_constant = ref(store.state.d_constant);
       // const pid = ref(store.state.pid);
 
 
@@ -138,14 +138,26 @@
       const controlMode = ref(store.state.controlMode);
       // Add more parameters as needed
 
-      const rules = {
-      minValue: v => (!v || v >= 0.1) || 'Mass must be at least 1 kg',
-      maxValue: v => (!v || v <= 100) || 'Mass must be no more than 100 kg',
+      const rulesParams = {
+      minValue: v => (!v || v >= 0.1) || 'Minimum value is 0.1',
+      maxValue: v => (!v || v <= 100) || 'Maximum value is 100',
+      // Add similar rules for other parameters
+    }
+
+    const rulesPID = {
+      minValue: v => (!v || v >= -1000) || 'Min value is -1000',
+      maxValue: v => (!v || v <= 1000) || 'Max value is 1000',
       // Add similar rules for other parameters
     }
 
     function updateParameters() {
       store.dispatch('setMass', parseFloat(mass.value));
+      store.dispatch('setPendulumMass', parseFloat(pendulum_mass.value));
+      store.dispatch('setPendulumLength', parseFloat(pendulum_length.value));
+
+      store.dispatch('setPConstant', parseFloat(p_constant.value));
+      store.dispatch('setIConstant', parseFloat(i_constant.value));
+      store.dispatch('setDConstant', parseFloat(d_constant.value));
       // Dispatch other parameter updates similarly
     }
 
@@ -165,7 +177,8 @@
         mass,
         pendulum_mass,
         pendulum_length,
-        rules,
+        rulesParams,
+        rulesPID,
         updateParameters,
         controlModeSwitch,
         tab,
