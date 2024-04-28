@@ -1,7 +1,7 @@
 export function solvePendulumNonLinear(states, u, parameters) {
     // Destructure states and parameters from the input objects
     const { x, xDot, fi, fiDot } = states;
-    const { deltaT, mC, mP, inertia, b, lt, g } = parameters;
+    const { deltaT, mC, mP, inertia, b, lt, g, p, i, d, last_state } = parameters;
     //denominator for shorter eqn
     let denom = ((7*lt**2*mP**2)/3 - lt**2*mP**2*Math.cos(fi)**2 + (7*mC*lt**2*mP)/3);
 
@@ -44,13 +44,13 @@ export function solvePendulumNonLinear(states, u, parameters) {
 // creat PID controller class
 export class PID {
     constructor(r0, rI, rD, deltaT) {
-        this.r0 = r0
-        this.rI = rI
-        this.rD = rD
-        this.deltaT = deltaT
-        this.eLast = 0
-        this.eLast2 = 0
-        this.uLast = 0
+        this.r0 = r0;
+        this.rI = rI;
+        this.rD = rD;
+        this.deltaT = deltaT;
+        this.eLast = 0;
+        this.eLast2 = 0;
+        this.uLast = 0;
     }
     // update PID controller
     update(e, deltaT) {
@@ -58,14 +58,14 @@ export class PID {
         let u = this.solve(e, this.eLast, this.eLast2, this.uLast, this.r0, this.rI, this.rD, this.deltaT)
         // limit the control signal
         if (u > 100) {
-            u = 100
+            u = 100;
         }
         else if (u < -100) {
-            u = -100
+            u = -100;
         }
-        this.eLast2 = this.eLast
-        this.eLast = e
-        this.uLast = u
+        this.eLast2 = this.eLast;
+        this.eLast = e;
+        this.uLast = u;
         return u
     }
     // add solver of PID controller
@@ -75,9 +75,10 @@ export class PID {
 
     // reset PID controller
     reset() {
-        this.eLast = 0
-        this.eLast2 = 0
-        this.uLast = 0
+        this.eLast = 0;
+        this.eLast2 = 0;
+        this.uLast = 0;
+        this.uLast = 0;
     }
 
 }

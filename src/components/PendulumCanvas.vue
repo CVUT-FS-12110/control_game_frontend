@@ -22,6 +22,7 @@
 //     // Parameters
 // },
     setup() {
+      const store = useStore();
       const pendulumCanvas = ref(null);
       const animationFrameId = ref(null);
       const isMouseDown = ref(false);
@@ -32,15 +33,15 @@
       const PIDForce = ref(0);
       const params = reactive({
         deltaT: 0.0167,
-        mC: 1.0,
-        mP: 0.2,
+        mC: computed(() => store.state.cartMass),
+        mP: computed(() => store.state.pendulumMass),
         inertia: 0.002,
         b: 0.2,
-        lt: 0.5,
+        lt: computed(() => store.state.pendulumLength),
         g: -9.81,
-        r0: -50,
-        rI: -20,
-        rD: -10,
+        r0: computed(() => store.state.p_constant),
+        rI: computed(() => store.state.i_constant),
+        rD: computed(() => store.state.d_constant),
         lastState: ""
       });
       const states = reactive({ x: 0, xDot: 0, fi: 0, fiDot: 0 });
@@ -49,9 +50,8 @@
       const PIDController = ref(null);
       const arrow = ref(null);
       const disturbance_arrow = ref(null);
-      const store = useStore();
       const angle = computed(() => store.state.fi);
-      const mass = computed(() => store.state.cartMass);
+      // const mass = computed(() => store.state.cartMass);
       const controlMode = computed(() => store.state.controlMode);
       const appliedForce = computed(() => store.state.totalForce);
       const disturbance = computed(() => store.state.disturbance);
@@ -157,6 +157,9 @@
         if (controlMode.value === 'PID') {
 
           let e = 0 - states.fi;
+          PIDController.value.r0 = params.r0;
+          PIDController.value.rI = params.rI;
+          PIDController.value.rD = params.rD;
           store.commit('updateForce',  PIDController.value.update(e, deltaT));
        }
 
@@ -189,7 +192,8 @@
       const updateStates = (deltaT) => {
         
         params.deltaT = deltaT;
-        params.mC = mass;
+        // params.mC = mass;
+
 
       
         
@@ -208,6 +212,7 @@
 
         if (controlMode.value === 'PID' && params.lastState != 'PID') {
           
+          PIDController.value.reset();
           states.x = 4;
           states.xDot = 0;
           states.fi = 0.15;
