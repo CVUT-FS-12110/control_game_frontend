@@ -16,6 +16,7 @@ export const stateStore = createStore({
       p_constant: -50,
       i_constant: -20,
       d_constant: -10,
+      max_force: 20,
       controlMode: 'Mouse',
       distance: 0,
       timeLimit: 60, // Time limit in seconds
@@ -37,8 +38,15 @@ export const stateStore = createStore({
       state.fi_velocity = fi_velocity;
     },
     updateForce(state, force) {
-      state.force = force;
+      if (force > state.max_force) {
+        state.force = state.max_force;
+      } else if (force < -state.max_force) {
+      state.force = -state.max_force;
+      } else {
+        state.force = force;
+      }
     },
+
     updateDisturbance(state, disturbance) {
       state.disturbance = disturbance;
     },
@@ -67,6 +75,10 @@ export const stateStore = createStore({
 
     updateDConstant(state, d_constant) {
       state.d_constant = d_constant;
+    },
+
+    updateMaxForce(state, force) {
+      state.max_force = force;
     },
     
     updateControlMode(state, mode) {
@@ -109,6 +121,10 @@ export const stateStore = createStore({
 
     setDConstant({ commit }, d_constant) {
       commit('updateDConstant', d_constant);
+    },
+
+    setMaxForce({ commit }, force) {
+      commit('updateMaxForce', force);
     },
 
     toggleControlMode({ commit }, mode) {

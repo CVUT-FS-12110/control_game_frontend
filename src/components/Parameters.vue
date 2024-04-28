@@ -33,7 +33,7 @@
     </v-tabs>
 
     <v-container>
-      <v-window v-model="tab">
+      <v-window v-model="tab" :key="forceRenderKey">
         <v-window-item value="pid">
           <v-row>
             <v-col>
@@ -63,7 +63,16 @@
             ></v-text-field>
           </v-col>
         </v-row>  
-
+        <v-row>
+          <v-col>
+            <v-text-field
+              label="max. force"
+              v-model="max_force"
+              :rules="[rulesPID.minValue, rulesPID.maxValue]"
+              type="number"
+            ></v-text-field>
+          </v-col>
+        </v-row>
 
         </v-window-item>
 
@@ -100,7 +109,9 @@
         </v-window-item>
 
         <v-window-item value="simulation">
-          Three
+          <v-card-text>
+            TODO
+          </v-card-text>
         </v-window-item>
       </v-window>
       <v-btn @click="updateParameters">Update Parameters</v-btn>
@@ -112,12 +123,15 @@
 
   <script>
   import { useStore } from 'vuex';
-  import { computed, ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
 
 
   export default {
     name: 'Parameters',
     setup() {
+
+
+      
       const store = useStore();
       const xPos = computed(() => store.state.x);
       const force = computed(() => store.state.totalForce);
@@ -126,8 +140,18 @@
       const p_constant = ref(store.state.p_constant);
       const i_constant = ref(store.state.i_constant);
       const d_constant = ref(store.state.d_constant);
+      const max_force = ref(store.state.max_force);
       // const pid = ref(store.state.pid);
+      const forceRenderKey = ref(0); // Initial key for forcing re-render
 
+      // Watch the tab variable to increment the forceRenderKey
+      watch(tab, () => {
+        forceRenderKey.value++;
+      });
+
+    //   watch(tab, (newValue, oldValue) => {
+    // console.log(`tab changed from ${oldValue} to ${newValue}`);
+    // });
 
       // TODO: Difference vs ref or computed here?
       // Computed properties to get/set Vuex state
@@ -158,6 +182,7 @@
       store.dispatch('setPConstant', parseFloat(p_constant.value));
       store.dispatch('setIConstant', parseFloat(i_constant.value));
       store.dispatch('setDConstant', parseFloat(d_constant.value));
+      store.dispatch('setMaxForce', parseFloat(max_force.value));
       // Dispatch other parameter updates similarly
     }
 
@@ -181,10 +206,12 @@
         rulesPID,
         updateParameters,
         controlModeSwitch,
+        forceRenderKey,
         tab,
         p_constant,
         i_constant,
         d_constant,        // Add more parameters as needed
+        max_force,
       };
     },
   }
