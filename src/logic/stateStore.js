@@ -133,13 +133,13 @@ export const stateStore = createStore({
     startTimer({ commit, state }) {
       const timer = setInterval(() => {
         if (state.currentTime < state.timeLimit) {
-          commit('setCurrentTime', state.currentTime + 1);
+          commit('setCurrentTime', state.currentTime + 0.01);
         } else {
           clearInterval(timer);
           // Dispatch an action at the end of the timer, if needed
           // commit('endOfSimulation');
         }
-      }, 1000);
+      }, 10);
     },
     resetTimer({ commit }) {
       commit('resetTimer');

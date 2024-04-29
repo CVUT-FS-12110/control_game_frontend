@@ -312,7 +312,6 @@
         store.commit('updateX', states.x);
         store.commit('updateForce', 0);
         store.dispatch('resetTimer');
-        store.dispatch('stopTimer');
       };
   
       return {
