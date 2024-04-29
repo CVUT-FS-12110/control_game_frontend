@@ -2,6 +2,9 @@
     <v-container class="pa-1">
       <canvas ref="pendulumCanvas" class="bordered-canvas"></canvas>
     </v-container>
+    <!-- add reset button -->
+    <v-btn @click="resetSimulation">Reset</v-btn>
+    
   </template>
   
   <script>
@@ -297,12 +300,27 @@
           }
         }
       };
+
+      // function to reset the simulation when the reset button is clicked. The states are set to their initial values
+      const resetSimulation = () => {
+        
+        states.x = 4; // TODO: refactor to use initial state
+        states.xDot = 0;
+        states.fi = 0;
+        states.fiDot = 0;
+        store.commit('updateFi', states.fi);
+        store.commit('updateX', states.x);
+        store.commit('updateForce', 0);
+        store.dispatch('resetTimer');
+        store.dispatch('stopTimer');
+      };
   
       return {
         pendulumCanvas,
         angle,
         timeLimit,
         currentTime,
+        resetSimulation,
         // startSimulation, 
         // xPosition,
         // yPosition,
