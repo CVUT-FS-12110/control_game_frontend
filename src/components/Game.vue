@@ -6,6 +6,9 @@
       <v-row class="child-width">
         <Parameters />
       </v-row>
+      <v-row class="child-width">
+        <Graph />
+      </v-row>
 
   </v-container>
 </template>
@@ -14,10 +17,11 @@
 import Control from './Control.vue';
 import Parameters from './Parameters.vue';
 import PendulumCanvas from './PendulumCanvas.vue';
+import Graph from './Graph.vue';
 
 export default {
     name: 'Game',
-    components: { PendulumCanvas, Parameters, Control }
+    components: { PendulumCanvas, Parameters, Control, Graph }
 }
 </script>
 

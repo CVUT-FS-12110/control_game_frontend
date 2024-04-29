@@ -1,3 +1,4 @@
+import { add } from 'numeric';
 import { createStore } from 'vuex';
 
 export const stateStore = createStore({
@@ -21,6 +22,10 @@ export const stateStore = createStore({
       distance: 0,
       timeLimit: 60, // Time limit in seconds
       currentTime: 0, // Current time in seconds
+      timeSeriesData: {
+                      t: [],
+                      x: []
+      }
       // other variables
     };
   },
@@ -50,6 +55,19 @@ export const stateStore = createStore({
     updateDisturbance(state, disturbance) {
       state.disturbance = disturbance;
     },
+
+    updateDatapoint(state, data) {
+      state.timeSeriesData.t.push(data.t);
+      state.timeSeriesData.x.push(data.x);
+    },
+
+    resetTimeSeriesData(state) {
+      state.timeSeriesData = {
+        t: [],
+        x: []
+      };
+    },
+
     updateTotalForce(state, force) {
       state.totalForce = force;
     },
@@ -144,6 +162,15 @@ export const stateStore = createStore({
     resetTimer({ commit }) {
       commit('resetTimer');
     },
+
+    resetTimeSeriesData({ commit }) {
+      commit('resetTimeSeriesData');
+    },
+
+    addDataPoint({ commit }, data) {
+      commit('updateDatapoint', data);
+    },
+
   // actions and getters as needed
   },
 });
