@@ -1,15 +1,16 @@
 <template>
   <v-container >
-    <v-row class="child-width">
+    <v-row>
+      <v-col class="child-width">
         <PendulumCanvas />
+      </v-col>
+      <v-col class="child-width">
+        <Graph />
+      </v-col>
       </v-row>
       <v-row class="child-width">
         <Parameters />
       </v-row>
-      <v-row class="child-width">
-        <Graph />
-      </v-row>
-
   </v-container>
 </template>
 

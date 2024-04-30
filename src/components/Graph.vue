@@ -7,6 +7,7 @@
     </v-container>
   </template>
 
+
 <script>
 import { ref, onMounted, watch, reactive } from 'vue';
 import Plotly from 'plotly.js-dist-min';
@@ -15,77 +16,79 @@ import { debounce } from 'lodash';
 
 export default {
   setup() {
+    // References to DOM elements and Vuex store
     const plotlyRef = ref(null);
     const store = useStore();
     const maxDataPoints = 200;
 
+    // Chart layout configuration
     const layout = reactive({
       title: 'Real-Time Data',
       xaxis: { title: 'Time' },
       yaxis: { title: 'Value' }
     });
 
+    // Initializes the Plotly chart
     function initializePlot() {
-      const initialData = getChartData();
       if (plotlyRef.value) {
-        Plotly.newPlot(plotlyRef.value, initialData, layout, { responsive: true });
+        Plotly.newPlot(plotlyRef.value, [{
+          x: store.state.timeSeriesData.t,
+          y: store.state.timeSeriesData.fi,
+          mode: 'lines+markers',
+          type: 'scatter',
+          name: 'Angle fi'
+        },
+        {
+          x: store.state.timeSeriesData.t,
+          y: store.state.timeSeriesData.u,
+          mode: 'lines+markers',
+          type: 'scatter',
+          name: 'Applied Force'
+      }
+      ], layout, { responsive: true });
       }
     }
 
-    function getChartData() {
-      return [{
-        x: store.state.timeSeriesData.t,
-        y: store.state.timeSeriesData.x,
-        mode: 'lines+markers',
-        type: 'scatter'
-      }];
-    }
+    // Resets the chart and reinitializes it with recent data points
+    // function resetChart() {
+    //   if (plotlyRef.value) {
+    //     Plotly.purge(plotlyRef.value); // Clear the chart
+    //     Plotly.newPlot(plotlyRef.value, [{
+    //       x: store.state.timeSeriesData.t.slice(-maxDataPoints),
+    //       y: store.state.timeSeriesData.x.slice(-maxDataPoints),
+    //       mode: 'lines+markers',
+    //       type: 'scatter'
+    //     }], layout, { responsive: true });
+    //   }
+    // }
 
-    function handleNewData(newData) {
-      if (newData !== undefined && store.state.x !== undefined) {
-        store.dispatch('addDataPoint', { t: newData, x: store.state.x });
-        debouncedUpdateChart(newData);
-      }
-    }
-
-    function resetChart() {
-        if (plotlyRef.value) {
-            // Use Plotly.react to reset the data with an empty dataset
-            Plotly.react(plotlyRef.value, [{
-            x: [],
-            y: [],
-            mode: 'lines+markers',
-            type: 'scatter'
-            }], layout, { responsive: true });
-        }
-        }
-
-    const updateChart = (newData) => {
-      if (plotlyRef.value) {
+    // Updates the chart by extending traces or resetting if needed
+    const updateChart = debounce((newData) => {
+      if (plotlyRef.value && newData !== undefined && store.state.x !== undefined) {
         try {
-          Plotly.extendTraces(plotlyRef.value, {
-            x: [[newData]],
-            y: [[store.state.x]]
-          }, [0]);
-        // Remove old data points if the length exceeds maxDataPoints
-        if (store.state.timeSeriesData.t.length > maxDataPoints) {
-        resetChart();
-        Plotly.extendTraces(plotlyRef.value, {
-            x: [[newData]],
-            y: [[store.state.x]]
-          }, [0]);
-          }
+          Plotly.update(plotlyRef.value, {
+            x: [store.state.timeSeriesData.t, store.state.timeSeriesData.t],
+            y: [store.state.timeSeriesData.fi, store.state.timeSeriesData.u]
+          }, [0, 1]);
 
+          // if (store.state.timeSeriesData.t.length > maxDataPoints) {
+          //   resetChart();
+          // }
         } catch (error) {
           console.error('Failed to extend traces on Plotly chart:', error);
         }
       }
-    };
+    }, 5); // Adjusted debounce time to 200 milliseconds
 
-    const debouncedUpdateChart = debounce(updateChart, 6);
+    // Watcher for new data points from Vuex store
+    watch(() => store.state.currentTime, (newData) => {
+      if (newData !== undefined && store.state.x !== undefined) {
+        store.dispatch('addDataPoint', { t: newData, x: store.state.x, fi: store.state.fi, u: store.state.force});
+        updateChart(newData);
+      }
+    }, { immediate: true });
 
-    watch(() => store.state.currentTime, handleNewData, { immediate: true });
-
+    // Initialize the plot when the component is mounted
     onMounted(initializePlot);
 
     return {
@@ -95,69 +98,6 @@ export default {
 };
 </script>
 
-  
-  <!-- <script>
-  import { ref, onMounted, onUnmounted, reactive, watch} from 'vue';
-  import Plotly from 'plotly.js-dist-min';
-  import { useStore } from 'vuex';
-  import { debounce } from 'lodash';
-  
-  export default {
-  setup() {
-    const plotlyRef = ref(null);
-    const store = useStore();
-
-    const layout = {
-      title: 'Real-Time Data',
-      xaxis: { title: 'Time' },
-      yaxis: { title: 'Value' }
-    };
-
-    function plot() {
-      const data = [{
-        x: store.state.timeSeriesData.t,
-        y: store.state.timeSeriesData.x,
-        mode: 'lines+markers',
-        type: 'scatter'
-      }];
-      if (plotlyRef.value) {
-        Plotly.newPlot(plotlyRef.value, data, layout, { responsive: true });
-      }
-    }
-
-    const updateChart = (newData) => {
-      if (plotlyRef.value && newData !== undefined && store.state.x !== undefined) {
-        try {
-          Plotly.extendTraces(plotlyRef.value, {
-            x: [[newData]],
-            y: [[store.state.x]]
-          }, [0]); // Index of the first trace
-        } catch (error) {
-          console.error('Failed to extend traces on Plotly chart:', error);
-        }
-      }
-    };
-
-    const debouncedUpdateChart = debounce(updateChart, 6);
-
-    watch(() => store.state.currentTime, (newData) => {
-      // Ensure the new data point is valid before dispatching
-      if (newData !== undefined && store.state.x !== undefined) {
-        store.dispatch('addDataPoint', { t: newData, x: store.state.x });
-
-        // Update the chart, debounced
-        debouncedUpdateChart(newData);
-      }
-    }, { immediate: true });
-
-    onMounted(plot);
-
-    return {
-      plotlyRef
-    };
-  }
-};
-</script> -->
   
   <style scoped>
   /* Add any additional styling if necessary */

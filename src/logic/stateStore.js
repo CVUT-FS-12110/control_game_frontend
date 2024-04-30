@@ -20,12 +20,15 @@ export const stateStore = createStore({
       max_force: 20,
       controlMode: 'Mouse',
       distance: 0,
-      timeLimit: 60, // Time limit in seconds
+      timeLimit: 10, // Time limit in seconds
       currentTime: 0, // Current time in seconds
       timeSeriesData: {
                       t: [],
-                      x: []
-      }
+                      x: [],
+                      fi: [],
+                      u: []
+      },
+      maxDataPoints: 600,
       // other variables
     };
   },
@@ -59,12 +62,23 @@ export const stateStore = createStore({
     updateDatapoint(state, data) {
       state.timeSeriesData.t.push(data.t);
       state.timeSeriesData.x.push(data.x);
+      state.timeSeriesData.fi.push(data.fi);
+      state.timeSeriesData.u.push(data.u);
+      // Check if the data exceeds the maximum allowed points
+      if (state.timeSeriesData.t.length > state.maxDataPoints) {
+          state.timeSeriesData.t.shift(); // Remove the oldest data point
+          state.timeSeriesData.x.shift();
+          state.timeSeriesData.fi.shift();
+          state.timeSeriesData.u.shift();
+      }
     },
 
     resetTimeSeriesData(state) {
       state.timeSeriesData = {
         t: [],
-        x: []
+        x: [],
+        fi: [],
+        u: []
       };
     },
 
@@ -151,19 +165,25 @@ export const stateStore = createStore({
     startTimer({ commit, state }) {
       const timer = setInterval(() => {
         if (state.currentTime < state.timeLimit) {
-          commit('setCurrentTime', state.currentTime + 0.01);
+          commit('setCurrentTime', state.currentTime + 0.05);
         } else {
           clearInterval(timer);
+          // commit('resetTimer');
+          this.dispatch('resetTimer');
+
+
           // Dispatch an action at the end of the timer, if needed
           // commit('endOfSimulation');
         }
-      }, 10);
+      }, 50);
     },
     resetTimer({ commit }) {
       commit('resetTimer');
+      this.dispatch("resetTimeSeries");
+      this.dispatch("startTimer");
     },
 
-    resetTimeSeriesData({ commit }) {
+    resetTimeSeries({ commit }) {
       commit('resetTimeSeriesData');
     },
 
