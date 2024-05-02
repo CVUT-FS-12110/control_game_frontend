@@ -1,17 +1,35 @@
-# Control game
-Web app for user-interactive simulation of inverted pendulum control.
-You can set and simulate your own PID controller or it is possible to control the force manually by mouse. Compete your controller!
+# Components
 
-## Web app is deployed on github pages
-https://cvut-fs-12110.github.io/control_game_frontend/
+Vue template files in this folder are automatically imported.
 
-## For devepolers
-- Navigate to desired folder and run in terminal:
+## 🚀 Usage
 
-  `git clone https://github.com/CVUT-FS-12110/control_game_frontend.git`
+Importing is handled by [unplugin-vue-components](https://github.com/unplugin/unplugin-vue-components). This plugin automatically imports `.vue` files created in the `src/components` directory, and registers them as global components. This means that you can use any component in your application without having to manually import it.
 
-- Then run: `npm install`
+The following example assumes a component located at `src/components/MyComponent.vue`:
 
-- For development server run: `npm run dev`
+```vue
+<template>
+  <div>
+    <MyComponent />
+  </div>
+</template>
 
+<script lang="ts" setup>
+  //
+</script>
+```
 
+When your template is rendered, the component's import will automatically be inlined, which renders to this:
+
+```vue
+<template>
+  <div>
+    <MyComponent />
+  </div>
+</template>
+
+<script lang="ts" setup>
+  import MyComponent from '@/components/MyComponent.vue'
+</script>
+```
