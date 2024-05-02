@@ -5,7 +5,7 @@ You can set and simulate your own PID controller or it is possible to control th
 ## Web app is deployed on github pages
 https://cvut-fs-12110.github.io/control_game_frontend/
 
-## For devepolers
+## For developers
 - Navigate to desired folder and run in terminal:
 
   `git clone https://github.com/CVUT-FS-12110/control_game_frontend.git`
