@@ -20,7 +20,7 @@ export const stateStore = createStore({
       max_force: 20,
       controlMode: 'Mouse',
       distance: 0,
-      timeLimit: 10, // Time limit in seconds
+      timeLimit: 100, // Time limit in seconds
       currentTime: 0, // Current time in seconds
       timeSeriesData: {
                       t: [],
@@ -28,7 +28,8 @@ export const stateStore = createStore({
                       fi: [],
                       u: []
       },
-      maxDataPoints: 600,
+      maxDataPoints: 500,
+      isPaused: false,
       // other variables
     };
   },
@@ -128,6 +129,9 @@ export const stateStore = createStore({
     resetTimer(state) {
       state.currentTime = 0;
     },
+    pauseSimulation(state) {
+      state.isPaused = !state.isPaused;
+    },
     // other mutations
   },
   actions: {
@@ -164,18 +168,20 @@ export const stateStore = createStore({
     },
     startTimer({ commit, state }) {
       const timer = setInterval(() => {
-        if (state.currentTime < state.timeLimit) {
-          commit('setCurrentTime', state.currentTime + 0.05);
-        } else {
-          clearInterval(timer);
-          // commit('resetTimer');
-          this.dispatch('resetTimer');
+        if (!state.isPaused) {    
+          if (state.currentTime < state.timeLimit) {
+            commit('setCurrentTime', state.currentTime + 0.05);
+          } else {
+            clearInterval(timer);
+            // commit('resetTimer');
+            this.dispatch('resetTimer');
 
 
           // Dispatch an action at the end of the timer, if needed
           // commit('endOfSimulation');
         }
-      }, 50);
+      }
+      }, 100);
     },
     resetTimer({ commit }) {
       commit('resetTimer');
@@ -189,6 +195,9 @@ export const stateStore = createStore({
 
     addDataPoint({ commit }, data) {
       commit('updateDatapoint', data);
+    },
+    togglePause({ commit }) {
+      commit('pauseSimulation');
     },
 
   // actions and getters as needed

@@ -4,6 +4,8 @@
     </v-container>
     <!-- add reset button -->
     <v-btn @click="resetSimulation">Reset</v-btn>
+    <v-btn @click="togglePause">{{ pauseLabel }}</v-btn>
+
     
   </template>
   
@@ -61,6 +63,7 @@
 
       const timeLimit = computed(() => store.state.timeLimit);
       const currentTime = computed(() => store.state.currentTime);
+      const pauseLabel = computed(() => store.state.isPaused ? 'Resume' : 'Pause');
   
   
       const setupEventListeners = (canvas) => {
@@ -87,6 +90,8 @@
         store.dispatch('startTimer');
         
         const animate = (timestamp) => {
+          if (store.state.isPaused) return;
+          console.log(store.state.isPaused);
 
           if (!lastTime) {
              lastTime = timestamp; // Initialize lastTime with the first timestamp
@@ -108,7 +113,8 @@
         };
         animate();
       };
-  
+
+
       const updateSegwayPosition = (deltaT) => {
         // You will need to integrate your logic for updating the segway's position here.
         // This is a placeholder implementation.
@@ -313,6 +319,13 @@
         store.commit('updateForce', 0);
         store.dispatch('resetTimer');
       };
+
+      const togglePause = () => {
+        store.dispatch('togglePause');
+        if (!store.state.isPaused) {
+          startAnimation(pendulumCanvas.value.getContext('2d'));
+        }
+      };
   
       return {
         pendulumCanvas,
@@ -320,6 +333,8 @@
         timeLimit,
         currentTime,
         resetSimulation,
+        togglePause,
+        pauseLabel,
         // startSimulation, 
         // xPosition,
         // yPosition,
