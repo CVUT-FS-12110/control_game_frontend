@@ -6,6 +6,7 @@
         <p>X Position: {{ xPos.toFixed(2) }}</p>
         <p>Angle: {{ angle.toFixed(2) }}</p>
         <p>Applied Force: {{ force.toFixed(2) }}</p>
+        <p>Simulation time: {{ time.toFixed(2) }}</p>
         <!-- Add more parameters as needed -->
       <!-- </v-card-text>
       <v-card-text>
@@ -136,6 +137,7 @@
       const xPos = computed(() => store.state.x);
       const force = computed(() => store.state.totalForce);
       const angle = computed(() => store.state.fi);
+      const time = computed(() => store.state.currentTime);
       const tab = ref();
       const p_constant = ref(store.state.p_constant);
       const i_constant = ref(store.state.i_constant);
@@ -212,6 +214,7 @@
         i_constant,
         d_constant,        // Add more parameters as needed
         max_force,
+        time,
       };
     },
   }
