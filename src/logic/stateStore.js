@@ -28,7 +28,7 @@ export const stateStore = createStore({
                       fi: [],
                       u: []
       },
-      maxDataPoints: 500,
+      maxDataPoints: 200,
       isPaused: false,
       // other variables
     };

@@ -91,7 +91,7 @@
         
         const animate = (timestamp) => {
           if (store.state.isPaused) return;
-          console.log(store.state.isPaused);
+          // console.log(store.state.isPaused);
 
           if (!lastTime) {
              lastTime = timestamp; // Initialize lastTime with the first timestamp

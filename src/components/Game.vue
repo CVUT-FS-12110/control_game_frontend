@@ -5,7 +5,7 @@
         <PendulumCanvas />
       </v-col>
       <v-col class="child-width">
-        <Graph />
+        <Graph_Chartjs />
       </v-col>
       </v-row>
       <v-row class="child-width">
@@ -18,11 +18,11 @@
 import Control from './Control.vue';
 import Parameters from './Parameters.vue';
 import PendulumCanvas from './PendulumCanvas.vue';
-import Graph from './Graph.vue';
+import Graph_Chartjs from './Graph_Chartjs.vue';
 
 export default {
     name: 'Game',
-    components: { PendulumCanvas, Parameters, Control, Graph }
+    components: { PendulumCanvas, Parameters, Control, Graph_Chartjs},
 }
 </script>
 
