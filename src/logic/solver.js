@@ -41,6 +41,63 @@ export function solvePendulumNonLinear(states, u, parameters) {
 
 }
 
+
+export class Rocket {
+    constructor(mass, length, comPosition, deltaT) {
+        this.mass = mass;     // Mass of the rocket
+        this.length = length; // Length of the rocket
+        this.comPosition = comPosition; // Position of center of mass
+        this.deltaT = deltaT; // Time step
+
+        // Calculate inertia using the parallel axis theorem
+        this.inertia = (1/12) * this.mass * this.length**2 + this.mass * this.comPosition**2;
+
+        // Initial states: horizontal position (x), vertical position (y), horizontal velocity (vx), vertical velocity (vy)
+        this.x = 0;     
+        this.y = 100;   
+        this.vx = 0;    
+        this.vy = 0;    
+
+        // Initial states: angle (alpha), angular velocity (omega)
+        this.alpha = 0;  
+        this.omega = 0;  
+    }
+
+    update(force, theta) {
+        // Horizontal and vertical forces from the applied force
+        const Fx = force * Math.sin(theta);  // Force in x direction
+        const Fy = force * Math.cos(theta) - this.mass * 9.81; // Force in y direction with gravity
+
+        // Implicit Euler update for velocities and positions
+        this.vx += this.deltaT * (Fx / this.mass);    // Update horizontal velocity
+        this.x += this.deltaT * this.vx;              // Update horizontal position
+
+        this.vy += this.deltaT * (Fy / this.mass);    // Update vertical velocity
+        this.y += this.deltaT * this.vy;              // Update vertical position
+
+        // Torque and angular dynamics using the center of mass
+        const torque = force * this.comPosition * Math.sin(this.alpha - theta);
+        this.omega += this.deltaT * (torque / this.inertia);  // Update angular velocity
+        this.alpha += this.deltaT * this.omega;               // Update angle (rotation)
+    }
+
+    setCenterOfMass(newComPosition) {
+        this.comPosition = newComPosition;
+        this.inertia = (1/12) * this.mass * this.length**2 + this.mass * this.comPosition**2;  // Recalculate inertia
+    }
+
+    // Reset if needed, for example, if the rocket needs a fresh start
+    reset() {
+        this.x = 0;
+        this.y = 100;
+        this.vx = 0;
+        this.vy = 0;
+        this.alpha = 0;
+        this.omega = 0;
+    }
+}
+
+
 // creat PID controller class
 export class PID {
     constructor(r0, rI, rD, deltaT) {
