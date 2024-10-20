@@ -1,3 +1,4 @@
+import { add } from 'numeric';
 import { createStore } from 'vuex';
 
 export const stateStore = createStore({
@@ -19,8 +20,16 @@ export const stateStore = createStore({
       max_force: 20,
       controlMode: 'Mouse',
       distance: 0,
-      timeLimit: 60, // Time limit in seconds
+      timeLimit: 100, // Time limit in seconds
       currentTime: 0, // Current time in seconds
+      timeSeriesData: {
+                      t: [],
+                      x: [],
+                      fi: [],
+                      u: []
+      },
+      maxDataPoints: 200,
+      isPaused: false,
       // other variables
     };
   },
@@ -50,6 +59,30 @@ export const stateStore = createStore({
     updateDisturbance(state, disturbance) {
       state.disturbance = disturbance;
     },
+
+    updateDatapoint(state, data) {
+      state.timeSeriesData.t.push(data.t);
+      state.timeSeriesData.x.push(data.x);
+      state.timeSeriesData.fi.push(data.fi);
+      state.timeSeriesData.u.push(data.u);
+      // Check if the data exceeds the maximum allowed points
+      if (state.timeSeriesData.t.length > state.maxDataPoints) {
+          state.timeSeriesData.t.shift(); // Remove the oldest data point
+          state.timeSeriesData.x.shift();
+          state.timeSeriesData.fi.shift();
+          state.timeSeriesData.u.shift();
+      }
+    },
+
+    resetTimeSeriesData(state) {
+      state.timeSeriesData = {
+        t: [],
+        x: [],
+        fi: [],
+        u: []
+      };
+    },
+
     updateTotalForce(state, force) {
       state.totalForce = force;
     },
@@ -96,6 +129,9 @@ export const stateStore = createStore({
     resetTimer(state) {
       state.currentTime = 0;
     },
+    pauseSimulation(state) {
+      state.isPaused = !state.isPaused;
+    },
     // other mutations
   },
   actions: {
@@ -132,18 +168,38 @@ export const stateStore = createStore({
     },
     startTimer({ commit, state }) {
       const timer = setInterval(() => {
-        if (state.currentTime < state.timeLimit) {
-          commit('setCurrentTime', state.currentTime + 1);
-        } else {
-          clearInterval(timer);
+        if (!state.isPaused) {    
+          if (state.currentTime < state.timeLimit) {
+            commit('setCurrentTime', state.currentTime + 0.05);
+          } else {
+            clearInterval(timer);
+            // commit('resetTimer');
+            this.dispatch('resetTimer');
+
+
           // Dispatch an action at the end of the timer, if needed
           // commit('endOfSimulation');
         }
-      }, 1000);
+      }
+      }, 100);
     },
     resetTimer({ commit }) {
       commit('resetTimer');
+      this.dispatch("resetTimeSeries");
+      this.dispatch("startTimer");
     },
+
+    resetTimeSeries({ commit }) {
+      commit('resetTimeSeriesData');
+    },
+
+    addDataPoint({ commit }, data) {
+      commit('updateDatapoint', data);
+    },
+    togglePause({ commit }) {
+      commit('pauseSimulation');
+    },
+
   // actions and getters as needed
   },
 });
