@@ -24,39 +24,40 @@ const basePoint = reactive({ x: null, y: null });
 const disturbanceBasePoint = reactive({ x: null, y: null });
 const mouseForce = reactive({ x: 0, y: 0 });
 const PIDForce = ref(0);
+
+// Parameters for the simulation
 const params = reactive({
-  deltaT: 0.0167,
-  mC: computed(() => store.state.cartMass),
-  mP: computed(() => store.state.pendulumMass),
-  inertia: 0.002,
-  b: 0.2,
-  lt: computed(() => store.state.pendulumLength),
-  g: -9.81,
-  r0: computed(() => store.state.p_constant),
-  rI: computed(() => store.state.i_constant),
-  rD: computed(() => store.state.d_constant),
-  lastState: ""
+  deltaT: 0.0167, // Time step for simulation
+  mC: computed(() => store.state.cartMass), // Mass of the cart
+  mP: computed(() => store.state.pendulumMass), // Mass of the pendulum
+  inertia: 0.002, // Inertia of the pendulum
+  b: 0.2, // Damping coefficient
+  lt: computed(() => store.state.pendulumLength), // Length of the pendulum
+  g: -9.81, // Gravitational constant
+  r0: computed(() => store.state.p_constant), // Proportional gain for PID
+  rI: computed(() => store.state.i_constant), // Integral gain for PID
+  rD: computed(() => store.state.d_constant), // Derivative gain for PID
+  lastState: "" // Last control state (PID or Mouse)
 });
+
+// State variables for the pendulum and cart
 const states = reactive({ x: 0, xDot: 0, fi: 0, fiDot: 0 });
 const segway = ref(null);
 const PIDController = ref(null);
 const arrow = ref(null);
 const disturbanceArrow = ref(null);
 
-const angle = computed(() => store.state.fi);
-const controlMode = computed(() => store.state.controlMode);
-const appliedForce = computed(() => store.state.totalForce);
-const disturbance = computed(() => store.state.disturbance);
-const timeLimit = computed(() => store.state.timeLimit);
-const currentTime = computed(() => store.state.currentTime);
+// Pause button label
 const pauseLabel = computed(() => store.state.isPaused ? 'Resume' : 'Pause');
 
+// Setup event listeners for the canvas
 const setupEventListeners = (canvas) => {
   canvas.addEventListener('mousemove', applyForceWithMouse);
   canvas.addEventListener('mousedown', handleMouseDown);
   canvas.addEventListener('mouseup', handleMouseUp);
 };
 
+// Load and draw the image of the segway
 const loadAndDrawImage = (canvas) => {
   const ctx = canvas.getContext('2d');
   const imgScale = 0.3;
@@ -69,13 +70,14 @@ const loadAndDrawImage = (canvas) => {
   img.src = segwayImage;
 };
 
+// Start the animation loop
 const startAnimation = (ctx) => {
   let lastTime = 0;
   store.dispatch('resetTimer');
   store.dispatch('startTimer');
 
   const animate = (timestamp) => {
-    if (store.state.isPaused) return;
+    if (store.state.isPaused) return; // Pause the animation if needed
 
     if (!lastTime) {
       lastTime = timestamp; // Initialize lastTime with the first timestamp
@@ -83,6 +85,7 @@ const startAnimation = (ctx) => {
 
     let deltaT = (timestamp - lastTime) * 0.001; // Convert to seconds
 
+    // Clear the canvas and update the simulation
     ctx.clearRect(0, 0, pendulumCanvas.value.width, pendulumCanvas.value.height);
     updateSegwayPosition(deltaT);
     segway.value.draw(ctx);
@@ -94,20 +97,23 @@ const startAnimation = (ctx) => {
     lastTime = timestamp;
     animationFrameId.value = requestAnimationFrame(animate);
   };
-  animate();
+  animationFrameId.value = requestAnimationFrame(animate);
 };
 
+// Update the position of the segway
 const updateSegwayPosition = (deltaT) => {
   updateStates(deltaT);
   segway.value.x = states.x;
   segway.value.fi = states.fi;
 };
 
+// Draw the reference line when using mouse control
 const drawReferenceLine = (ctx) => {
-  if (!isMouseDown.value || controlMode.value !== 'Mouse') return;
+  if (!isMouseDown.value || store.state.controlMode !== 'Mouse') return;
   arrow.value.draw(ctx, mousePosition.x, basePoint.x);
 };
 
+// Draw the zero line for reference
 const drawZeroLine = (ctx) => {
   ctx.setLineDash([5, 15]);
   ctx.beginPath();
@@ -118,15 +124,18 @@ const drawZeroLine = (ctx) => {
   ctx.setLineDash([]); // Reset line dash pattern
 };
 
+// Draw the disturbance line to visualize external forces
 const drawDisturbanceLine = (ctx) => {
   disturbanceArrow.value.draw(ctx, disturbanceBasePoint.x + store.state.disturbance * 50, disturbanceBasePoint.x);
 };
 
+// Generate a random force within a given range
 const generateRandomForce = (min, max) => Math.random() * (max - min) + min;
 
+// Apply force using the PID controller
 const applyForceWithPID = (deltaT) => {
-  if (controlMode.value === 'PID') {
-    let e = 0 - states.fi;
+  if (store.state.controlMode === 'PID') {
+    let e = 0 - states.fi; // Error calculation for PID
     PIDController.value.r0 = params.r0;
     PIDController.value.rI = params.rI;
     PIDController.value.rD = params.rD;
@@ -134,12 +143,13 @@ const applyForceWithPID = (deltaT) => {
   }
 };
 
+// Apply force using mouse interaction
 const applyForceWithMouse = (event) => {
-  if (!isMouseDown.value && controlMode.value === 'Mouse') {
+  if (!isMouseDown.value && store.state.controlMode === 'Mouse') {
     mouseForce.x = 0;
     store.commit('updateForce', mouseForce.x);
     params.lastState = 'Mouse';
-  } else if (controlMode.value === 'Mouse') {
+  } else if (store.state.controlMode === 'Mouse') {
     const rect = pendulumCanvas.value.getBoundingClientRect();
     const scaleX = pendulumCanvas.value.width / rect.width;
     const scaleY = pendulumCanvas.value.height / rect.height;
@@ -152,10 +162,12 @@ const applyForceWithMouse = (event) => {
   }
 };
 
+// Update the states of the pendulum and cart
 const updateStates = (deltaT) => {
   params.deltaT = deltaT || 0.016;
 
-  if (controlMode.value === 'PID' && params.lastState !== 'PID') {
+  // Initialize PID controller if switching from Mouse to PID control
+  if (store.state.controlMode === 'PID' && params.lastState !== 'PID') {
     PIDController.value.reset();
     states.x = 4;
     states.xDot = 0;
@@ -163,16 +175,18 @@ const updateStates = (deltaT) => {
     states.fiDot = 0;
     applyForceWithPID(deltaT);
     params.lastState = 'PID';
-  } else if (controlMode.value === 'PID' && params.lastState === 'PID') {
+  } else if (store.state.controlMode === 'PID' && params.lastState === 'PID') {
     applyForceWithPID(deltaT);
   }
 
-  const newStates = solvePendulumNonLinear(states, appliedForce.value, params);
+  // Update the states using the nonlinear solver
+  const newStates = solvePendulumNonLinear(states, store.state.totalForce, params);
   states.x = newStates.x;
   states.xDot = newStates.xDot;
   states.fi = newStates.fi;
   states.fiDot = newStates.fiDot;
 
+  // Ensure the cart stays within the canvas bounds
   if (states.x < 0) {
     states.x = 0;
     states.xDot = 0;
@@ -181,28 +195,34 @@ const updateStates = (deltaT) => {
     states.xDot = 0;
   }
 
+  // Update the store with the new states
   store.commit('updateFi', states.fi);
   store.commit('updateX', states.x);
 };
 
+// Handle mouse down event to start applying force
 const handleMouseDown = (event) => {
   if (event.buttons === 1) {
     isMouseDown.value = true;
   }
 };
 
+// Handle mouse up event to stop applying force
 const handleMouseUp = () => {
   isMouseDown.value = false;
 };
 
+// Lifecycle hook to initialize the canvas
 onMounted(() => {
   initializeCanvas();
 });
 
+// Lifecycle hook to clean up the canvas
 onBeforeUnmount(() => {
   cleanupCanvas();
 });
 
+// Initialize the canvas and set up components
 const initializeCanvas = () => {
   const canvas = pendulumCanvas.value;
   if (canvas) {
@@ -221,6 +241,7 @@ const initializeCanvas = () => {
   }
 };
 
+// Clean up the canvas and remove event listeners
 const cleanupCanvas = () => {
   const canvas = pendulumCanvas.value;
   if (canvas) {
@@ -233,6 +254,7 @@ const cleanupCanvas = () => {
   }
 };
 
+// Reset the simulation to the initial state
 const resetSimulation = () => {
   states.x = 4;
   states.xDot = 0;
@@ -244,6 +266,7 @@ const resetSimulation = () => {
   store.dispatch('resetTimer');
 };
 
+// Toggle pause and resume the animation
 const togglePause = () => {
   store.dispatch('togglePause');
   if (!store.state.isPaused) {
