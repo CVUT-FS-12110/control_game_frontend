@@ -9,7 +9,7 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount, ref, reactive, computed } from 'vue';
-import segwayImage from "@/assets/segway.png";
+import rocketImage from "@/assets/rocket-icon-vector.jpg";
 import { ImgComponent } from '@/logic/imageComponent';
 import { solvePendulumNonLinear, PID } from '@/logic/solver';
 import { useStore } from 'vuex';
@@ -65,9 +65,10 @@ const loadAndDrawImage = (canvas) => {
   const m2px = 100; // 1 meter = 100 pixels
   img.onload = () => {
     segway.value = new ImgComponent(img, basePoint.x, 20, 0, 0, 0, imgScale, m2px);
+    ctx.drawImage(img, basePoint.x - img.width / 2, basePoint.y - img.height, img.width, img.height);
     startAnimation(ctx);
   };
-  img.src = segwayImage;
+  img.src = rocketImage;
 };
 
 // Start the animation loop
