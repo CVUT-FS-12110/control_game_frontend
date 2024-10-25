@@ -10,7 +10,8 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref, reactive, computed } from 'vue';
 import rocketImage from "@/assets/rocket-icon-vector.jpg";
-import { ImgComponent } from '@/logic/imageComponent';
+import flamesImage from "@/assets/flames.png";
+import { ImgComponent, FlameComponent } from '@/logic/imageComponent';
 import { solvePendulumNonLinear, PID } from '@/logic/solver';
 import { useStore } from 'vuex';
 import { ArrowComponent } from '@/logic/arrowComponent';
@@ -24,7 +25,7 @@ const basePoint = reactive({ x: null, y: null });
 const disturbanceBasePoint = reactive({ x: null, y: null });
 const mouseForce = reactive({ x: 0, y: 0 });
 const PIDForce = ref(0);
-
+const desired_img_size = { width: 50, height: 100 };
 // Parameters for the simulation
 const params = reactive({
   deltaT: 0.0167, // Time step for simulation
@@ -43,9 +44,11 @@ const params = reactive({
 // State variables for the pendulum and cart
 const states = reactive({ x: 0, xDot: 0, fi: 0, fiDot: 0 });
 const segway = ref(null);
+const rocketBottom = reactive({ x: 0, y: 0 });
 const PIDController = ref(null);
 const arrow = ref(null);
 const disturbanceArrow = ref(null);
+const rocketFlames = ref(null);
 
 // Pause button label
 const pauseLabel = computed(() => store.state.isPaused ? 'Resume' : 'Pause');
@@ -60,15 +63,22 @@ const setupEventListeners = (canvas) => {
 // Load and draw the image of the segway
 const loadAndDrawImage = (canvas) => {
   const ctx = canvas.getContext('2d');
-  const imgScale = 0.3;
   const img = new Image();
   const m2px = 100; // 1 meter = 100 pixels
   img.onload = () => {
-    segway.value = new ImgComponent(img, basePoint.x, 20, 0, 0, 0, imgScale, m2px);
+    segway.value = new ImgComponent({img: img, x: basePoint.x, y: 100, fi: 0, speedX: 0, speedFi: 0, desired_size: desired_img_size, m2px: m2px});
     ctx.drawImage(img, basePoint.x - img.width / 2, basePoint.y - img.height, img.width, img.height);
     startAnimation(ctx);
   };
+
   img.src = rocketImage;
+
+  // Load the flames image
+  const flamesImg = new Image();
+  flamesImg.onload = () => {
+    rocketFlames.value = new FlameComponent(flamesImg, basePoint, { width: 50, height: 150 });
+  };
+  flamesImg.src = flamesImage;
 };
 
 // Start the animation loop
@@ -90,6 +100,7 @@ const startAnimation = (ctx) => {
     ctx.clearRect(0, 0, pendulumCanvas.value.width, pendulumCanvas.value.height);
     updateSegwayPosition(deltaT);
     segway.value.draw(ctx);
+    drawFlames(ctx); // Draw flames
     drawReferenceLine(ctx);
     drawDisturbanceLine(ctx);
     drawZeroLine(ctx);
@@ -106,12 +117,24 @@ const updateSegwayPosition = (deltaT) => {
   updateStates(deltaT);
   segway.value.x = states.x;
   segway.value.fi = states.fi;
+  rocketBottom.x = segway.value.x * segway.value.m2px;
+  rocketBottom.y = segway.value.y + segway.value.desired_size.height;
+};
+
+// Draw flames based on the applied force
+const drawFlames = (ctx) => {
+  if (rocketFlames.value) {
+
+
+    const angle = Math.atan2(mousePosition.y - rocketBottom.y, mousePosition.x - rocketBottom.x);
+    rocketFlames.value.draw(ctx, rocketBottom.x, rocketBottom.y, angle - Math.PI / 2, Math.sqrt(mouseForce.x ** 2 + mouseForce.y ** 2));
+  }
 };
 
 // Draw the reference line when using mouse control
 const drawReferenceLine = (ctx) => {
   if (!isMouseDown.value || store.state.controlMode !== 'Mouse') return;
-  arrow.value.draw(ctx, mousePosition.x, basePoint.x);
+  arrow.value.draw(ctx, mousePosition, rocketBottom);
 };
 
 // Draw the zero line for reference
@@ -157,8 +180,10 @@ const applyForceWithMouse = (event) => {
     const forceScale = 0.05;
     mousePosition.x = (event.clientX - rect.left) * scaleX;
     mousePosition.y = (event.clientY - rect.top) * scaleY;
-    mouseForce.x = (mousePosition.x - basePoint.x) * forceScale;
-    store.commit('updateForce', mouseForce.x);
+    mouseForce.x = (mousePosition.x - rocketBottom.x) * forceScale;
+    mouseForce.y = (mousePosition.y - rocketBottom.y) * forceScale;
+    // const total_force = Math.sqrt(mouseForce.x ** 2 + mouseForce.y ** 2);
+    store.commit('updateForce', -mouseForce.x);
     params.lastState = 'Mouse';
   }
 };

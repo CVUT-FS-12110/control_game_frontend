@@ -1,89 +1,23 @@
-// export class ImgComponent {
-//     constructor(img, x, y, fi, speedX, speedFi, segwayScale, m2px) {
-//       this.width = img.width * segwayScale;
-//       this.height = img.height * segwayScale;
-//       this.img = img;
-//       this.x = x;
-//       this.y = y;
-//       this.speedX = speedX;
-//       this.fi = fi;
-//       this.speedFi = speedFi;
-//       this.segwayAxis = {
-//         y: 454*segwayScale, //segway rotation axis
-//         x: 75*segwayScale  //segway rotation axis
-//     };
-//       this.segwayScale = segwayScale;
-//       this.m2px = m2px;
-//           // Scale positions from meters to pixels
-//       this.scaledX = this.x * this.segwayScale;
-//       this.scaledY = this.y * this.segwayScale;
-//       // this.scaledWidth = this.width * this.segwayScale;
-//       // this.scaledHeight = this.height * this.segwayScale;
-//     }
-  
-//     draw(ctx) {
-//       // Ensure transformation is applied before drawing
-//       // this.transform(ctx);
-
-//       ctx.save();
-
-//       ctx.translate(this.x * this.m2px + this.segwayAxis.x, this.y + this.segwayAxis.y);
-
-//       ctx.rotate(this.fi);
-
-//       ctx.drawImage(this.img, -this.segwayAxis.x, -this.segwayAxis.y, this.width, this.height);
-      
-//       ctx.restore();
-  
-//       // Adjusted to draw the image based on its transformed position
-//       // ctx.drawImage(this.img, 0, 0, this.width, this.height);
-  
-//       // Reset transformation after drawing to not affect other canvas operations
-//       // ctx.setTransform(1, 0, 0, 1, 0, 0);
-//     }
-  
-//     transform(ctx) {
-//       // Reset the current transformation matrix to the identity matrix
-
-//       ctx.setTransform(1, 0, 0, 1, 0, 0);
-  
-//       ctx.transform(1, 0, 0, 1, this.x*this.m2px + this.segwayAxis.x, this.y*this.m2px + this.segwayAxis.y);// shift to the axis
-
-//       ctx.transform(Math.cos(this.fi), Math.sin(this.fi), -Math.sin(this.fi), Math.cos(this.fi), 0, 0);// rotate
-
-//       ctx.transform(1, 0, 0, 1, -this.segwayAxis.x, -this.segwayAxis.y); // shift to the img corner
-  
-//       // Additional translation if needed, for example, to center the image
-//       // ctx.translate(-this.width / 2, -this.height / 2); // Uncomment if needed
-//     }
-//     // Inside ImgComponent class
-//     updatePosition(newX, newY) {
-//       this.x = newX;
-//       this.y = newY;
-// }
-
-//   }
-  
-
   export class ImgComponent {
-    constructor(img, x, y, fi, speedX, speedFi, scale, m2px) {
+    constructor({img, x, y, fi, speedX, speedFi, desired_size, m2px}) {
       this.img = img;
       this.x = x;
       this.y = y;
       this.fi = fi;
       this.speedX = speedX;
       this.speedFi = speedFi;
-      this.scale = scale;
       this.m2px = m2px;
+      this.desired_size = desired_size;
+      this.scale = {x: desired_size.width / img.width, y: desired_size.height / img.height};
   
       // Set initial width and height based on the scale
-      this.width = img.width * this.scale;
-      this.height = img.height * this.scale;
+      this.width = img.width * this.scale.x;
+      this.height = img.height * this.scale.y;
   
       // Automatically calculate rotation axis based on image dimensions
       this.rotationAxis = {
-        x: img.width / 2 * this.scale,
-        y: img.height * this.scale
+        x: img.width / 2 * this.scale.x,
+        y: img.height * this.scale.y
       };
     }
   
@@ -110,6 +44,63 @@
     updatePosition(newX, newY) {
       this.x = newX;
       this.y = newY;
+    }
+  }
+  
+
+// export class FlameComponent {
+//     constructor(img, basePoint, maxFlameSize) {
+//       this.img = img;
+//       this.basePoint = basePoint;
+//       this.maxFlameSize = maxFlameSize;
+//     }
+  
+//     draw(ctx, force) {
+//       // Calculate the scale based on the magnitude of the force
+//       const scale = Math.min(1, Math.abs(force) / 20); // Adjust this scaling factor as needed
+  
+//       // Set size to zero if force is zero
+//       const flameHeight = scale === 0 ? 0 : this.maxFlameSize.height * scale;
+//       const flameWidth = scale === 0 ? 0 : this.maxFlameSize.width * scale;
+  
+//       // Only draw the image if the size is greater than zero
+//       if (flameHeight > 0 && flameWidth > 0) {
+//         ctx.drawImage(
+//           this.img,
+//           this.basePoint.x - flameWidth / 2,
+//           this.basePoint.y,
+//           flameWidth,
+//           flameHeight
+//         );
+//       }
+//     }
+//   }
+  
+export class FlameComponent {
+    constructor(img, basePoint, maxFlameSize) {
+      this.img = img;
+      this.basePoint = basePoint;
+      this.maxFlameSize = maxFlameSize;
+    }
+  
+    draw(ctx, x, y, angle, force) {
+      const scale = Math.min(1, Math.abs(force) / 20); // Adjust the scaling factor based on force
+      const flameHeight = this.maxFlameSize.height * scale;
+      const flameWidth = this.maxFlameSize.width * scale;
+  
+      if (flameHeight > 0 && flameWidth > 0) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle); // Rotate to match the direction from rocket bottom to mouse
+        ctx.drawImage(
+          this.img,
+          -flameWidth / 2, // Center the flame image horizontally
+          0, // Start drawing at the bottom of the rocket
+          flameWidth,
+          flameHeight
+        );
+        ctx.restore();
+      }
     }
   }
   
