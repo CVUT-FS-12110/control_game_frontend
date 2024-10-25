@@ -32,7 +32,7 @@ const params = reactive({
   mC: computed(() => store.state.cartMass), // Mass of the cart
   mP: computed(() => store.state.pendulumMass), // Mass of the pendulum
   inertia: 0.002, // Inertia of the pendulum
-  b: 0.2, // Damping coefficient
+  b: 1.5, // Damping coefficient
   lt: computed(() => store.state.pendulumLength), // Length of the pendulum
   g: -9.81, // Gravitational constant
   r0: computed(() => store.state.p_constant), // Proportional gain for PID
@@ -104,7 +104,7 @@ const startAnimation = (ctx) => {
     drawReferenceLine(ctx);
     drawDisturbanceLine(ctx);
     drawZeroLine(ctx);
-    store.commit("updateDisturbance", generateRandomForce(-1, 1));
+    store.commit("updateDisturbance", generateRandomForce(-0.1, 0.1));
     store.commit("updateTotalForce", store.state.force + store.state.disturbance);
     lastTime = timestamp;
     animationFrameId.value = requestAnimationFrame(animate);
@@ -177,7 +177,7 @@ const applyForceWithMouse = (event) => {
     const rect = pendulumCanvas.value.getBoundingClientRect();
     const scaleX = pendulumCanvas.value.width / rect.width;
     const scaleY = pendulumCanvas.value.height / rect.height;
-    const forceScale = 0.05;
+    const forceScale = 0.02;
     mousePosition.x = (event.clientX - rect.left) * scaleX;
     mousePosition.y = (event.clientY - rect.top) * scaleY;
     mouseForce.x = (mousePosition.x - rocketBottom.x) * forceScale;
